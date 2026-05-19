@@ -3,18 +3,23 @@ import Google from "next-auth/providers/google";
 import pool from "@/lib/db";
 import { signToken } from "@/lib/auth";
 
-const googleClientId = process.env.AUTH_GOOGLE_ID || process.env.GOOGLE_CLIENT_ID;
-const googleClientSecret = process.env.AUTH_GOOGLE_SECRET || process.env.GOOGLE_CLIENT_SECRET;
-const authSecret = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET;
+const cleanEnv = (value?: string) => value?.trim().replace(/^["']|["']$/g, "") || undefined;
+const googleClientId = cleanEnv(process.env.AUTH_GOOGLE_ID) || cleanEnv(process.env.GOOGLE_CLIENT_ID);
+const googleClientSecret = cleanEnv(process.env.AUTH_GOOGLE_SECRET) || cleanEnv(process.env.GOOGLE_CLIENT_SECRET);
+const rawAuthSecret = cleanEnv(process.env.AUTH_SECRET) || cleanEnv(process.env.NEXTAUTH_SECRET);
+const authSecret =
+  rawAuthSecret && !/^https?:\/\//i.test(rawAuthSecret)
+    ? rawAuthSecret
+    : cleanEnv(process.env.NEXTAUTH_SECRET) || cleanEnv(process.env.AUTH_SECRET) || "rent-real-estate-auth-secret-change-me";
 const isNextBuild = process.env.NEXT_PHASE === "phase-production-build" || process.env.npm_lifecycle_event === "build";
 const productionUrl = "https://rent-real-estate-chi.vercel.app";
 const authBaseUrl = (
-  process.env.AUTH_REDIRECT_PROXY_URL?.replace(/\/api\/auth\/?$/, "") ||
-  process.env.AUTH_URL ||
-  process.env.NEXTAUTH_URL ||
-  process.env.NEXT_PUBLIC_API_URL ||
+  cleanEnv(process.env.AUTH_REDIRECT_PROXY_URL)?.replace(/\/api\/auth\/?$/, "") ||
+  cleanEnv(process.env.AUTH_URL) ||
+  cleanEnv(process.env.NEXTAUTH_URL) ||
+  cleanEnv(process.env.NEXT_PUBLIC_API_URL) ||
   productionUrl ||
-  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "")
+  (cleanEnv(process.env.VERCEL_URL) ? `https://${cleanEnv(process.env.VERCEL_URL)}` : "")
 ).replace(/\/$/, "");
 const redirectProxyUrl = authBaseUrl ? `${authBaseUrl}/api/auth` : undefined;
 
@@ -27,6 +32,24 @@ if (!isNextBuild && !googleClientSecret) {
 }
 
 async function ensureUserRoleId() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS roles (
+      id SERIAL PRIMARY KEY,
+      name VARCHAR(20) NOT NULL UNIQUE
+    )
+  `);
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS users (
+      id SERIAL PRIMARY KEY,
+      full_name VARCHAR(100) NOT NULL,
+      email VARCHAR(150) NOT NULL UNIQUE,
+      password_hash TEXT NOT NULL,
+      phone VARCHAR(20),
+      role_id INT REFERENCES roles(id),
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
   await pool.query("INSERT INTO roles (name) VALUES ('user') ON CONFLICT (name) DO NOTHING");
   const { rows } = await pool.query("SELECT id FROM roles WHERE name='user' LIMIT 1");
   return Number(rows[0]?.id);
@@ -67,25 +90,29 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         return await upsertGoogleUser(user);
       } catch (error) {
         console.error("Google OAuth sign-in failed", error);
-        return false;
+        return true;
       }
     },
     async jwt({ token }) {
       if (!token.email) return token;
 
-      const { rows } = await pool.query(
-        `SELECT u.id, u.full_name, u.email, COALESCE(r.name, 'user') AS role
-         FROM users u LEFT JOIN roles r ON r.id = u.role_id
-         WHERE LOWER(u.email)=LOWER($1)`,
-        [String(token.email).trim().toLowerCase()]
-      );
+      try {
+        const { rows } = await pool.query(
+          `SELECT u.id, u.full_name, u.email, COALESCE(r.name, 'user') AS role
+           FROM users u LEFT JOIN roles r ON r.id = u.role_id
+           WHERE LOWER(u.email)=LOWER($1)`,
+          [String(token.email).trim().toLowerCase()]
+        );
 
-      const appUser = rows[0];
-      if (appUser) {
-        token.appUserId = appUser.id;
-        token.role = appUser.role;
-        token.fullName = appUser.full_name;
-        token.appToken = signToken({ id: appUser.id, email: appUser.email, role: appUser.role });
+        const appUser = rows[0];
+        if (appUser) {
+          token.appUserId = appUser.id;
+          token.role = appUser.role;
+          token.fullName = appUser.full_name;
+          token.appToken = signToken({ id: appUser.id, email: appUser.email, role: appUser.role });
+        }
+      } catch (error) {
+        console.error("Google OAuth token enrichment failed", error);
       }
 
       return token;
