@@ -3,8 +3,9 @@ import Google from "next-auth/providers/google";
 import pool from "@/lib/db";
 import { signToken } from "@/lib/auth";
 
-const googleClientId = process.env.GOOGLE_CLIENT_ID;
-const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
+const googleClientId = process.env.AUTH_GOOGLE_ID || process.env.GOOGLE_CLIENT_ID;
+const googleClientSecret = process.env.AUTH_GOOGLE_SECRET || process.env.GOOGLE_CLIENT_SECRET;
+const authSecret = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET;
 const isNextBuild = process.env.NEXT_PHASE === "phase-production-build" || process.env.npm_lifecycle_event === "build";
 const productionUrl = "https://rent-real-estate-chi.vercel.app";
 const authBaseUrl = (
@@ -18,11 +19,11 @@ const authBaseUrl = (
 const redirectProxyUrl = authBaseUrl ? `${authBaseUrl}/api/auth` : undefined;
 
 if (!isNextBuild && (!googleClientId || !/^[\w-]+\.apps\.googleusercontent\.com$/.test(googleClientId))) {
-  throw new Error("Invalid or missing GOOGLE_CLIENT_ID. Use the OAuth 2.0 Client ID from Google Cloud Console.");
+  console.error("Invalid or missing Google OAuth client id. Set GOOGLE_CLIENT_ID or AUTH_GOOGLE_ID.");
 }
 
 if (!isNextBuild && !googleClientSecret) {
-  throw new Error("Missing GOOGLE_CLIENT_SECRET. Use the OAuth 2.0 Client Secret from Google Cloud Console.");
+  console.error("Missing Google OAuth client secret. Set GOOGLE_CLIENT_SECRET or AUTH_GOOGLE_SECRET.");
 }
 
 async function ensureUserRoleId() {
@@ -51,7 +52,7 @@ async function upsertGoogleUser(user: { email?: string | null; name?: string | n
 }
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: authSecret,
   trustHost: true,
   redirectProxyUrl,
   providers: [
