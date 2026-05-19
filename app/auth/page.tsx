@@ -48,10 +48,18 @@ export default function AuthPage() {
     const emailParam = searchParams.get("email");
     const nameParam = searchParams.get("name");
     const tabParam = searchParams.get("tab");
+    const oauthError = searchParams.get("error");
 
     if (emailParam) setEmail(decodeURIComponent(emailParam));
     if (nameParam) setName(decodeURIComponent(nameParam));
     if (tabParam === "register" || tabParam === "login") setMode(tabParam);
+    if (oauthError) {
+      setError(
+        oauthError === "OAuthCallback"
+          ? "Google login failed. Please check the Google redirect URI and environment variables."
+          : "Google login failed. Please try again."
+      );
+    }
   }, [searchParams]);
 
   const startResendTimer = () => {

@@ -15,6 +15,31 @@ if (!isNextBuild && !googleClientSecret) {
   throw new Error("Missing GOOGLE_CLIENT_SECRET. Use the OAuth 2.0 Client Secret from Google Cloud Console.");
 }
 
+async function ensureUserRoleId() {
+  await pool.query("INSERT INTO roles (name) VALUES ('user') ON CONFLICT (name) DO NOTHING");
+  const { rows } = await pool.query("SELECT id FROM roles WHERE name='user' LIMIT 1");
+  return Number(rows[0]?.id);
+}
+
+async function upsertGoogleUser(user: { email?: string | null; name?: string | null; id?: string | null }) {
+  const email = user.email?.trim().toLowerCase();
+  if (!email) return false;
+
+  const roleId = await ensureUserRoleId();
+  if (!roleId) throw new Error("Could not resolve default user role.");
+
+  await pool.query(
+    `INSERT INTO users (full_name, email, password_hash, role_id)
+     VALUES ($1,$2,$3,$4)
+     ON CONFLICT (email) DO UPDATE SET
+       full_name = COALESCE(NULLIF(EXCLUDED.full_name, ''), users.full_name),
+       updated_at = NOW()`,
+    [user.name?.trim() || email, email, `oauth:google:${user.id ?? email}`, roleId]
+  );
+
+  return true;
+}
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
   secret: process.env.NEXTAUTH_SECRET,
   trustHost: true,
@@ -26,26 +51,21 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   ],
   callbacks: {
     async signIn({ user }) {
-      if (!user.email) return false;
-
-      const existing = await pool.query("SELECT id FROM users WHERE email=$1", [user.email]);
-      if (!existing.rows.length) {
-        await pool.query(
-          "INSERT INTO users (full_name, email, password_hash) VALUES ($1,$2,$3)",
-          [user.name ?? user.email, user.email, `oauth:google:${user.id ?? user.email}`]
-        );
+      try {
+        return await upsertGoogleUser(user);
+      } catch (error) {
+        console.error("Google OAuth sign-in failed", error);
+        return false;
       }
-
-      return true;
     },
     async jwt({ token }) {
       if (!token.email) return token;
 
       const { rows } = await pool.query(
-        `SELECT u.id, u.full_name, u.email, r.name AS role
-         FROM users u JOIN roles r ON r.id = u.role_id
-         WHERE u.email=$1`,
-        [token.email]
+        `SELECT u.id, u.full_name, u.email, COALESCE(r.name, 'user') AS role
+         FROM users u LEFT JOIN roles r ON r.id = u.role_id
+         WHERE LOWER(u.email)=LOWER($1)`,
+        [String(token.email).trim().toLowerCase()]
       );
 
       const appUser = rows[0];
