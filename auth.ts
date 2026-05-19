@@ -6,10 +6,13 @@ import { signToken } from "@/lib/auth";
 const googleClientId = process.env.GOOGLE_CLIENT_ID;
 const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
 const isNextBuild = process.env.NEXT_PHASE === "phase-production-build" || process.env.npm_lifecycle_event === "build";
+const productionUrl = "https://rent-real-estate-chi.vercel.app";
 const authBaseUrl = (
+  process.env.AUTH_REDIRECT_PROXY_URL?.replace(/\/api\/auth\/?$/, "") ||
   process.env.AUTH_URL ||
   process.env.NEXTAUTH_URL ||
   process.env.NEXT_PUBLIC_API_URL ||
+  productionUrl ||
   (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "")
 ).replace(/\/$/, "");
 const redirectProxyUrl = authBaseUrl ? `${authBaseUrl}/api/auth` : undefined;
