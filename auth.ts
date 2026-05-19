@@ -6,6 +6,13 @@ import { signToken } from "@/lib/auth";
 const googleClientId = process.env.GOOGLE_CLIENT_ID;
 const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
 const isNextBuild = process.env.NEXT_PHASE === "phase-production-build" || process.env.npm_lifecycle_event === "build";
+const authBaseUrl = (
+  process.env.AUTH_URL ||
+  process.env.NEXTAUTH_URL ||
+  process.env.NEXT_PUBLIC_API_URL ||
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "")
+).replace(/\/$/, "");
+const redirectProxyUrl = authBaseUrl ? `${authBaseUrl}/api/auth` : undefined;
 
 if (!isNextBuild && (!googleClientId || !/^[\w-]+\.apps\.googleusercontent\.com$/.test(googleClientId))) {
   throw new Error("Invalid or missing GOOGLE_CLIENT_ID. Use the OAuth 2.0 Client ID from Google Cloud Console.");
@@ -43,6 +50,7 @@ async function upsertGoogleUser(user: { email?: string | null; name?: string | n
 export const { handlers, signIn, signOut, auth } = NextAuth({
   secret: process.env.NEXTAUTH_SECRET,
   trustHost: true,
+  redirectProxyUrl,
   providers: [
     Google({
       clientId: googleClientId ?? "missing-google-client-id.apps.googleusercontent.com",
