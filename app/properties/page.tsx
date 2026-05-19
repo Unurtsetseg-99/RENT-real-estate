@@ -154,6 +154,7 @@ function ListingsContent() {
 
             return {
               id: p.id,
+              isDb: true,
               title: p.title,
               description: p.description || "",
               price: p.price,
@@ -200,9 +201,9 @@ function ListingsContent() {
 
   // DB-approved listings must win over mock listings when ids overlap.
   const dbPropertyIds = new Set(dbProperties.map((p) => p.id));
-  const mockFiltered = mockProperties.filter((p) =>
-    !dbPropertyIds.has(p.id) && (mode === "rent" ? p.status === "For Rent" : p.status === "For Sale")
-  );
+  const mockFiltered = mockProperties
+    .filter((p) => !dbPropertyIds.has(p.id) && (mode === "rent" ? p.status === "For Rent" : p.status === "For Sale"))
+    .map((p) => ({ ...p, isDb: false }));
   
   // Filter DB properties by mode so listings and map pins stay in sync.
   const dbFiltered = dbProperties.filter((p) => mode === "rent" ? p.status === "For Rent" : p.status === "For Sale");

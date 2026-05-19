@@ -5,6 +5,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useLang } from "@/context/LangContext";
 import ListingCard from "@/components/ListingCard";
 import AccountSidebar from "@/components/AccountSidebar";
+import { properties as mockProperties } from "@/data/mockData";
 import type { Property } from "@/types";
 
 type ApiProperty = {
@@ -30,6 +31,8 @@ type ApiProperty = {
   longitude?: number | null;
 };
 
+const localFavKey = (name: string) => `hously-local-favorites-${name || "guest"}`;
+
 function mapApiProperty(p: ApiProperty): Property {
   const apiImages = Array.isArray(p.images) ? p.images.map((img) => img.image_url).filter(Boolean) as string[] : [];
   const features: string[] = [];
@@ -39,6 +42,7 @@ function mapApiProperty(p: ApiProperty): Property {
 
   return {
     id: p.id,
+    isDb: true,
     title: p.title,
     description: p.description || "",
     price: Number(p.price),
@@ -64,7 +68,7 @@ function mapApiProperty(p: ApiProperty): Property {
 }
 
 export default function FavoritesPage() {
-  const { isAuthenticated, token } = useAuth();
+  const { fullName, isAuthenticated, token } = useAuth();
   const { t } = useLang();
   const [favProperties, setFavProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
@@ -80,12 +84,20 @@ export default function FavoritesPage() {
       setLoading(true);
       setError("");
       try {
+        let dbFavorites: Property[] = [];
         const res = await fetch("/api/favorites", {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Failed to load favorites.");
-        setFavProperties(Array.isArray(data) ? data.map(mapApiProperty) : []);
+        dbFavorites = Array.isArray(data) ? data.map(mapApiProperty) : [];
+
+        const localIds = JSON.parse(localStorage.getItem(localFavKey(fullName || "guest")) || "[]");
+        const localFavorites = mockProperties
+          .filter((property) => localIds.includes(Number(property.id)))
+          .map((property) => ({ ...property, isDb: false }));
+
+        setFavProperties([...dbFavorites, ...localFavorites]);
       } catch (e) {
         setError(e instanceof Error ? e.message : "Failed to load favorites.");
         setFavProperties([]);
@@ -95,7 +107,9 @@ export default function FavoritesPage() {
     };
 
     loadFavorites();
-  }, [isAuthenticated, token]);
+    window.addEventListener("favorites-changed", loadFavorites);
+    return () => window.removeEventListener("favorites-changed", loadFavorites);
+  }, [fullName, isAuthenticated, token]);
 
   if (!isAuthenticated) {
     return (

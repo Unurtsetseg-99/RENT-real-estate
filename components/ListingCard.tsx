@@ -5,18 +5,30 @@ import { useAuth } from "@/context/AuthContext";
 import { useLang } from "@/context/LangContext";
 import type { ListingCardProps } from "@/types";
 
+const localFavKey = (name: string) => `hously-local-favorites-${name || "guest"}`;
+
 export default function ListingCard({ property }: ListingCardProps) {
-  const { isAuthenticated, token } = useAuth();
+  const { fullName, isAuthenticated, token } = useAuth();
   const { t } = useLang();
   const router = useRouter();
   const [isFav, setIsFav] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const isDbProperty = property.isDb === true;
+  const favKey = localFavKey(fullName || "guest");
 
   useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
-    if (!isAuthenticated || !token) {
+    if (!isAuthenticated) {
       setIsFav(false);
+      return;
+    }
+
+    if (!isDbProperty || !token) {
+      try {
+        const ids = JSON.parse(localStorage.getItem(favKey) || "[]");
+        setIsFav(ids.includes(Number(property.id)));
+      } catch {}
       return;
     }
 
@@ -31,20 +43,35 @@ export default function ListingCard({ property }: ListingCardProps) {
       .catch(() => {});
 
     return () => { ignore = true; };
-  }, [isAuthenticated, property.id, token]);
+  }, [favKey, isAuthenticated, isDbProperty, property.id, token]);
 
   const toggleFav = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    if (!isAuthenticated || !token) return;
+    if (!isAuthenticated) return;
 
     const next = !isFav;
     setIsFav(next);
+
+    if (!isDbProperty || !token) {
+      try {
+        const ids = JSON.parse(localStorage.getItem(favKey) || "[]");
+        const propertyId = Number(property.id);
+        const nextIds = next ? Array.from(new Set([...ids, propertyId])) : ids.filter((id: number) => id !== propertyId);
+        localStorage.setItem(favKey, JSON.stringify(nextIds));
+        window.dispatchEvent(new Event("favorites-changed"));
+      } catch {
+        setIsFav(!next);
+      }
+      return;
+    }
+
     try {
       const res = await fetch(`/api/favorites/${property.id}`, {
         method: next ? "POST" : "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) setIsFav(!next);
+      else window.dispatchEvent(new Event("favorites-changed"));
     } catch {
       setIsFav(!next);
     }

@@ -145,6 +145,7 @@ export interface PropertyI18n {
 
 export interface Property {
   id: number;
+  isDb?: boolean;
   i18n?: PropertyI18n;
   title?: string;
   description?: string;
