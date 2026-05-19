@@ -10,18 +10,22 @@ const rawAuthSecret = cleanEnv(process.env.AUTH_SECRET) || cleanEnv(process.env.
 const authSecret =
   rawAuthSecret && !/^https?:\/\//i.test(rawAuthSecret)
     ? rawAuthSecret
-    : cleanEnv(process.env.NEXTAUTH_SECRET) || cleanEnv(process.env.AUTH_SECRET) || "rent-real-estate-auth-secret-change-me";
+    : cleanEnv(process.env.NEXTAUTH_SECRET) || "rent-real-estate-auth-secret-change-me";
 const isNextBuild = process.env.NEXT_PHASE === "phase-production-build" || process.env.npm_lifecycle_event === "build";
 const productionUrl = "https://rent-real-estate-chi.vercel.app";
 const authBaseUrl = (
-  cleanEnv(process.env.AUTH_REDIRECT_PROXY_URL)?.replace(/\/api\/auth\/?$/, "") ||
   cleanEnv(process.env.AUTH_URL) ||
   cleanEnv(process.env.NEXTAUTH_URL) ||
   cleanEnv(process.env.NEXT_PUBLIC_API_URL) ||
   productionUrl ||
   (cleanEnv(process.env.VERCEL_URL) ? `https://${cleanEnv(process.env.VERCEL_URL)}` : "")
 ).replace(/\/$/, "");
-const redirectProxyUrl = authBaseUrl ? `${authBaseUrl}/api/auth` : undefined;
+
+process.env.AUTH_URL = authBaseUrl;
+process.env.NEXTAUTH_URL = authBaseUrl;
+process.env.AUTH_SECRET = authSecret;
+process.env.NEXTAUTH_SECRET = authSecret;
+delete process.env.AUTH_REDIRECT_PROXY_URL;
 
 if (!isNextBuild && (!googleClientId || !/^[\w-]+\.apps\.googleusercontent\.com$/.test(googleClientId))) {
   console.error("Invalid or missing Google OAuth client id. Set GOOGLE_CLIENT_ID or AUTH_GOOGLE_ID.");
@@ -77,11 +81,13 @@ async function upsertGoogleUser(user: { email?: string | null; name?: string | n
 export const { handlers, signIn, signOut, auth } = NextAuth({
   secret: authSecret,
   trustHost: true,
-  redirectProxyUrl,
+  basePath: "/api/auth",
+  session: { strategy: "jwt" },
   providers: [
     Google({
       clientId: googleClientId ?? "missing-google-client-id.apps.googleusercontent.com",
       clientSecret: googleClientSecret ?? "missing-google-client-secret",
+      allowDangerousEmailAccountLinking: true,
     }),
   ],
   callbacks: {
@@ -130,5 +136,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
   pages: {
     signIn: "/auth",
+    error: "/auth",
   },
 });
