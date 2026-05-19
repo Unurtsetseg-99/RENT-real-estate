@@ -18,6 +18,8 @@ type Message = {
   }>;
 };
 
+type ListingDraft = Record<string, unknown>;
+
 const SUGGESTIONS = [
   "2 room apartment in Bayanzurkh",
   "House for sale in Khan-Uul",
@@ -39,6 +41,8 @@ export default function AiChatWidget() {
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [draft, setDraft] = useState<ListingDraft | undefined>();
+  const [awaitingConfirmation, setAwaitingConfirmation] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -66,9 +70,14 @@ export default function AiChatWidget() {
           "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({ message: text }),
+        body: JSON.stringify({ message: text, draft, awaitingConfirmation }),
       });
       const data = await res.json();
+      setDraft(data.draft);
+      setAwaitingConfirmation(Boolean(data.awaitingConfirmation));
+      if (data.tool === "create_listing" && !data.awaitingConfirmation && !data.draft) {
+        setDraft(undefined);
+      }
       setMessages((m) => [...m, {
         id: Date.now() + 1,
         role: "assistant",

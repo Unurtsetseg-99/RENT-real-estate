@@ -48,6 +48,10 @@ type ListingDraft = {
   city?: string;
   district?: string;
   address?: string;
+  address_detail?: string;
+  latitude?: number;
+  longitude?: number;
+  toilets?: number;
   total_floors?: number;
   floor?: string;
   windows?: number;
@@ -185,15 +189,14 @@ async function getRows(args: SearchArgs, relaxedFilters: string[] = []) {
     );
 
     return rows.map(toPropertyResult);
-  } catch {
+  } catch (e) {
+    if (pool) throw e;
     return getMockRows(args, relaxedFilters);
   }
 }
 
 async function findHelpfulProperties(args: SearchArgs): Promise<PropertySearchResult> {
-  const normalizedArgs = { ...args, limit: args.limit ?? 5 };
-  const rows = await getRows(normalizedArgs);
-  return { rows, relaxed: false, relaxedFilters: [], args: normalizedArgs };
+  return recommendHelpfulProperties(args);
 }
 
 async function recommendHelpfulProperties(args: SearchArgs): Promise<PropertySearchResult> {
@@ -236,6 +239,10 @@ async function ensureAgentPropertyColumns() {
     ADD COLUMN IF NOT EXISTS garage VARCHAR(20),
     ADD COLUMN IF NOT EXISTS payment_terms VARCHAR(100),
     ADD COLUMN IF NOT EXISTS khoroo VARCHAR(100),
+    ADD COLUMN IF NOT EXISTS address_detail TEXT,
+    ADD COLUMN IF NOT EXISTS latitude DOUBLE PRECISION,
+    ADD COLUMN IF NOT EXISTS longitude DOUBLE PRECISION,
+    ADD COLUMN IF NOT EXISTS toilets INTEGER,
     ADD COLUMN IF NOT EXISTS listing_type VARCHAR(50) DEFAULT 'For Sale',
     ADD COLUMN IF NOT EXISTS feature_options JSONB NOT NULL DEFAULT '[]'::jsonb
   `);
@@ -250,10 +257,10 @@ async function createListingFromDraft(draft: ListingDraft, userId: number) {
 
   const { rows } = await pool!.query(
     `INSERT INTO properties (
-      title,description,price,property_type,bedrooms,bathrooms,area_size,city,district,address,image_url,owner_id,status,
+      title,description,price,property_type,bedrooms,bathrooms,toilets,area_size,city,district,address,address_detail,latitude,longitude,image_url,owner_id,status,
       total_floors,floor,windows,window_direction,furnished,built_year,balcony,garage,payment_terms,khoroo,listing_type,feature_options
      )
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,'pending',$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24) RETURNING *`,
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,'pending',$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28) RETURNING *`,
     [
       draft.title,
       draft.description ?? null,
@@ -261,10 +268,14 @@ async function createListingFromDraft(draft: ListingDraft, userId: number) {
       draft.property_type ?? null,
       draft.bedrooms ?? null,
       draft.bathrooms ?? null,
+      draft.toilets ?? null,
       draft.area_size ?? null,
       draft.city ?? "Ulaanbaatar",
       draft.district ?? null,
       draft.address ?? draft.district ?? null,
+      draft.address_detail ?? draft.address ?? null,
+      draft.latitude ?? null,
+      draft.longitude ?? null,
       null,
       userId,
       draft.total_floors ?? null,
@@ -421,6 +432,7 @@ function parseListingDraft(message: string): ListingDraft {
   draft.title = parseTextAfter(stripped, ["title", "ner", "name"]);
   draft.description = parseTextAfter(stripped, ["description", "tailbar", "desc"]);
   draft.address = parseTextAfter(stripped, ["address", "hayag"]) || draft.district;
+  draft.address_detail = parseTextAfter(stripped, ["detailed address", "address detail", "delgerengui hayag", "todorhoi hayag"]) || draft.address;
   draft.khoroo = parseTextAfter(stripped, ["khoroo", "horoo"]);
   draft.payment_terms = parseTextAfter(stripped, ["payment", "payment terms", "tolbor"]);
   draft.floor = parseTextAfter(stripped, ["floor", "davhar"]);
@@ -429,6 +441,7 @@ function parseListingDraft(message: string): ListingDraft {
 
   draft.area_size = parseNumberAfter(msg, ["area", "talbai"]);
   draft.bathrooms = parseNumberAfter(msg, ["bathroom", "bathrooms"]);
+  draft.toilets = parseNumberAfter(msg, ["toilet", "toilets", "00"]);
   draft.total_floors = parseNumberAfter(msg, ["total floors", "niit davhar"]);
   draft.windows = parseNumberAfter(msg, ["windows", "tsonh"]);
   draft.built_year = parseNumberAfter(msg, ["built year", "year"]);
@@ -446,6 +459,13 @@ function parseListingDraft(message: string): ListingDraft {
 
   if (includesAny(msg, ["balcony", "tagttai", "tagt"])) draft.balcony = "Yes";
   if (includesAny(msg, ["garage", "garaj", "garajtai"])) draft.garage = "Yes";
+  if (includesAny(msg, ["no balcony", "tagtgui"])) draft.balcony = "No";
+  if (includesAny(msg, ["no garage", "garajgui"])) draft.garage = "No";
+
+  const latMatch = msg.match(/(?:lat|latitude)\s*[:=]?\s*(-?\d+(?:[.,]\d+)?)/i);
+  const lngMatch = msg.match(/(?:lng|long|longitude)\s*[:=]?\s*(-?\d+(?:[.,]\d+)?)/i);
+  if (latMatch) draft.latitude = Number(latMatch[1].replace(",", "."));
+  if (lngMatch) draft.longitude = Number(lngMatch[1].replace(",", "."));
 
   if (!draft.title && draft.district && draft.property_type) {
     draft.title = `${draft.district} ${draft.bedrooms ? `${draft.bedrooms}-room ` : ""}${draft.property_type}`;
@@ -453,6 +473,84 @@ function parseListingDraft(message: string): ListingDraft {
   if (!draft.description) draft.description = stripped.trim() || undefined;
   draft.feature_options = Array.from(new Set(draft.feature_options ?? []));
   return draft;
+}
+
+function mergeDraft(base: ListingDraft | undefined, update: ListingDraft) {
+  const merged: ListingDraft = { ...(base ?? {}) };
+  for (const [key, value] of Object.entries(update) as Array<[keyof ListingDraft, ListingDraft[keyof ListingDraft]]>) {
+    if (value !== undefined && value !== null && !(Array.isArray(value) && value.length === 0) && value !== "") {
+      if (key === "feature_options") {
+        merged.feature_options = Array.from(new Set([...(merged.feature_options ?? []), ...((value as string[]) ?? [])]));
+      } else {
+        merged[key] = value as never;
+      }
+    }
+  }
+  if (!merged.address_detail && merged.address) merged.address_detail = merged.address;
+  if (!merged.address && (merged.district || merged.khoroo || merged.address_detail)) {
+    merged.address = [merged.district, merged.khoroo, merged.address_detail].filter(Boolean).join(", ");
+  }
+  return merged;
+}
+
+const listingQuestions: Array<{ key: keyof ListingDraft; label: string; example: string; required?: boolean }> = [
+  { key: "title", label: "Title", example: "River Garden 2 room apartment", required: true },
+  { key: "listing_type", label: "Sale or rent", example: "For Sale / For Rent", required: true },
+  { key: "property_type", label: "Property type", example: "Apartment, Office, House & Villa", required: true },
+  { key: "price", label: "Price", example: "180 million", required: true },
+  { key: "district", label: "District", example: "Khan-Uul", required: true },
+  { key: "khoroo", label: "Khoroo", example: "Khoroo 15", required: true },
+  { key: "address_detail", label: "Detailed address", example: "River Garden, building 3", required: true },
+  { key: "description", label: "Description", example: "Sunny, clean, close to school", required: true },
+  { key: "area_size", label: "Area", example: "74 m2", required: true },
+  { key: "bedrooms", label: "Rooms", example: "2 rooms", required: true },
+  { key: "bathrooms", label: "Bathrooms", example: "1 bathroom", required: true },
+  { key: "toilets", label: "Toilets", example: "1 toilet", required: true },
+  { key: "total_floors", label: "Total floors", example: "16 floors", required: true },
+  { key: "floor", label: "Floor", example: "8", required: true },
+  { key: "windows", label: "Windows", example: "4 windows", required: true },
+  { key: "window_direction", label: "Window direction", example: "South-East", required: true },
+  { key: "furnished", label: "Furnished", example: "Fully furnished", required: true },
+  { key: "built_year", label: "Built year", example: "2019", required: true },
+  { key: "balcony", label: "Balcony", example: "Yes / No", required: true },
+  { key: "garage", label: "Garage", example: "Yes / No", required: true },
+  { key: "payment_terms", label: "Payment terms", example: "6+1, mortgage, negotiable", required: true },
+  { key: "feature_options", label: "Advantages", example: "near school, mortgage available", required: true },
+  { key: "latitude", label: "Map latitude", example: "47.91317" },
+  { key: "longitude", label: "Map longitude", example: "106.91355" },
+];
+
+function missingListingFields(draft: ListingDraft) {
+  return listingQuestions
+    .filter((field) => field.required)
+    .filter((field) => {
+      const value = draft[field.key];
+      return value === undefined || value === null || value === "" || (Array.isArray(value) && value.length === 0);
+    });
+}
+
+function formatDraftPreview(draft: ListingDraft) {
+  return [
+    `Title: ${draft.title}`,
+    `Status: ${draft.listing_type}`,
+    `Type: ${draft.property_type}`,
+    `Price: ${new Intl.NumberFormat("mn-MN").format(Number(draft.price || 0))} MNT`,
+    `Location: ${[draft.district, draft.khoroo, draft.address_detail].filter(Boolean).join(", ")}`,
+    `Rooms: ${draft.bedrooms}, bathrooms: ${draft.bathrooms}, toilets: ${draft.toilets}`,
+    `Area: ${draft.area_size} m2, floor: ${draft.floor}/${draft.total_floors}`,
+    `Windows: ${draft.windows}, direction: ${draft.window_direction}`,
+    `Furnished: ${draft.furnished}, built year: ${draft.built_year}`,
+    `Balcony: ${draft.balcony}, garage: ${draft.garage}`,
+    `Payment: ${draft.payment_terms}`,
+    `Advantages: ${(draft.feature_options ?? []).join(", ")}`,
+    draft.latitude && draft.longitude ? `Map pin: ${draft.latitude}, ${draft.longitude}` : "Map pin: not provided",
+    `Description: ${draft.description}`,
+  ].join("\n");
+}
+
+function isConfirmMessage(message: string) {
+  const msg = normalizeText(message);
+  return includesAny(msg, ["yes", "zuw", "zugeer", "ok", "submit", "send", "ywuul", "oruul", "batla"]);
 }
 
 function parseIntent(message: string) {
@@ -494,11 +592,14 @@ function buildReply(tool: string, result: unknown): string {
   }
 
   if (tool === "create_listing") {
-    const r = result as { created?: { id: number; title: string }; missing?: string[]; draft?: ListingDraft };
+    const r = result as { created?: { id: number; title: string }; missing?: string[]; draft?: ListingDraft; needsConfirmation?: boolean };
     if (r.created) {
       return `Your listing **${r.created.title}** was submitted for admin approval. It will appear in listings after approval.`;
     }
-    return `I can submit the listing, but these required fields are missing: **${r.missing?.join(", ")}**.\n\nSend one message with title, price, district, property type, and description. Optional fields I can also read: rooms, bathrooms, area, floor, total floors, windows, window direction, furnished, built year, balcony, garage, payment terms, khoroo, listing type, and features.`;
+    if (r.needsConfirmation && r.draft) {
+      return `Please review this listing before I send it to admin approval:\n\n${formatDraftPreview(r.draft)}\n\nIf everything is correct, reply **yes** or **zuw**. If something is wrong, send the corrected field.`;
+    }
+    return `I can submit the listing, but these required fields are missing:\n\n${r.missing?.map((field) => `- ${field}`).join("\n")}\n\nSend the missing information in one message. After all required details are complete, I will show a preview and ask you to confirm before submitting.`;
   }
 
   const search = result as PropertySearchResult;
@@ -513,7 +614,7 @@ function buildReply(tool: string, result: unknown): string {
   );
 
   if (search.relaxed) {
-    return `I did not find an exact match. Because you asked for a recommendation, I relaxed: ${labelRelaxedFilters(search.relaxedFilters)}.\n\n${lines.join("\n")}`;
+    return `I did not find an exact match, so I found the closest approved listings by relaxing: ${labelRelaxedFilters(search.relaxedFilters)}.\n\n${lines.join("\n")}`;
   }
 
   const prefix = tool === "recommend" ? "Recommended" : "Found";
@@ -522,6 +623,8 @@ function buildReply(tool: string, result: unknown): string {
 
 const bodySchema = z.object({
   message: z.string().min(1).max(2000),
+  draft: z.record(z.string(), z.unknown()).optional(),
+  awaitingConfirmation: z.boolean().optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -531,7 +634,10 @@ export async function POST(req: NextRequest) {
 
     const { message } = body.data;
     const user = getUser(req);
-    const intent = parseIntent(message);
+    let intent = parseIntent(message);
+    if (body.data.draft && intent.tool !== "bulk") {
+      intent = { tool: "create_listing" as const, args: parseListingDraft(message) };
+    }
 
     if (intent.tool === "bulk" && (!user || user.role !== "admin")) {
       return err("Forbidden: admin only", 403);
@@ -550,15 +656,15 @@ export async function POST(req: NextRequest) {
       if (!String(owner.rows[0]?.phone ?? "").trim()) {
         return err("Please add your phone number in Profile before posting a listing.", 400);
       }
-      const draft = intent.args as ListingDraft;
-      const missing = [
-        !draft.title && "title",
-        !draft.price && "price",
-        !draft.district && "district",
-        !draft.property_type && "property type",
-        !draft.description && "description",
-      ].filter(Boolean) as string[];
-      result = missing.length > 0 ? { missing, draft } : { created: await createListingFromDraft(draft, user.id), draft };
+      const draft = mergeDraft(body.data.draft as ListingDraft | undefined, intent.args as ListingDraft);
+      const missing = missingListingFields(draft);
+      if (missing.length > 0) {
+        result = { missing: missing.map((field) => `${field.label} (${field.example})`), draft };
+      } else if (!body.data.awaitingConfirmation || !isConfirmMessage(message)) {
+        result = { needsConfirmation: true, draft };
+      } else {
+        result = { created: await createListingFromDraft(draft, user.id), draft };
+      }
     } else if (intent.tool === "recommend") {
       result = await recommendHelpfulProperties(intent.args as SearchArgs);
     } else {
@@ -572,12 +678,14 @@ export async function POST(req: NextRequest) {
       ).catch(() => {});
     }
 
+    const resultObject = result as { created?: unknown; draft?: ListingDraft; needsConfirmation?: boolean };
     return ok({
       reply: buildReply(intent.tool, result),
       results: "rows" in (result as object) ? (result as PropertySearchResult).rows : [],
       tool: intent.tool,
       relaxed: "relaxed" in (result as object) ? (result as PropertySearchResult).relaxed : false,
-      draft: "draft" in (result as object) ? (result as { draft?: ListingDraft }).draft : undefined,
+      draft: resultObject.created ? undefined : resultObject.draft,
+      awaitingConfirmation: resultObject.needsConfirmation ? true : undefined,
     });
   } catch (e) {
     return handleError(e);

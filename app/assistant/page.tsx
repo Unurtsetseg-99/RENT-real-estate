@@ -10,6 +10,8 @@ type Message = {
   results?: Array<{ id: number; title: string; price: number; district: string; property_type: string; bedrooms?: number; image_url?: string }>;
 };
 
+type ListingDraft = Record<string, unknown>;
+
 const SUGGESTIONS = [
   "2 room apartment in Bayanzurkh under 150 million",
   "House for sale in Khan-Uul",
@@ -29,6 +31,8 @@ export default function AssistantPage() {
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [draft, setDraft] = useState<ListingDraft | undefined>();
+  const [awaitingConfirmation, setAwaitingConfirmation] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -49,7 +53,7 @@ export default function AssistantPage() {
           "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({ message: text }),
+        body: JSON.stringify({ message: text, draft, awaitingConfirmation }),
       });
 
       if (!res.ok) {
@@ -58,6 +62,11 @@ export default function AssistantPage() {
       }
 
       const data = await res.json();
+      setDraft(data.draft);
+      setAwaitingConfirmation(Boolean(data.awaitingConfirmation));
+      if (data.tool === "create_listing" && !data.awaitingConfirmation && !data.draft) {
+        setDraft(undefined);
+      }
       setMessages((m) => [...m, {
         id: Date.now() + 1,
         role: "assistant",
