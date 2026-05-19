@@ -11854,3 +11854,529 @@ iframe {
     height: 46px;
   }
 }
+
+/* Final responsive tightening */
+html {
+  overflow-x: hidden;
+}
+
+body {
+  min-width: 320px;
+  overflow-x: clip;
+}
+
+.field input,
+.field select,
+.field textarea,
+.filter-select-rounded,
+.filter-search-input,
+.custom-select-trigger,
+.post-textarea,
+.admin-modal-textarea,
+.ai-widget-input,
+.assistant-input,
+.auth-phone-input {
+  max-width: 100%;
+  min-width: 0;
+}
+
+.detail-image-wrap,
+.gallery-wrap,
+.listings-map-panel,
+.listings-map-custom,
+.post-map-preview,
+.admin-detail-images {
+  overflow: hidden;
+}
+
+.listing-grid,
+.favorites-grid,
+.home-listing-grid,
+.agents-grid,
+.detail-chips,
+.detail-feature-options-grid,
+.post-grid-2,
+.post-grid-3,
+.post-feature-grid,
+.admin-detail-grid,
+.admin-stats-row {
+  min-width: 0;
+}
+
+@media (max-width: 1180px) {
+  .home-hero-bottom,
+  .hero-search-row,
+  .home-search-form {
+    max-width: 100%;
+  }
+
+  .listings-layout {
+    grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
+  }
+
+  .listings-main .listing-grid-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .detail-grid {
+    grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.75fr);
+  }
+}
+
+@media (max-width: 980px) {
+  .nav-center {
+    display: none;
+  }
+
+  .nav-hamburger {
+    display: inline-flex;
+  }
+
+  .home-hero-bottom,
+  .hero-actions,
+  .home-hero-actions {
+    gap: 14px;
+  }
+
+  .listings-layout,
+  .detail-grid,
+  .settings-layout,
+  .account-layout {
+    grid-template-columns: 1fr !important;
+  }
+
+  .listings-sidebar {
+    order: 0;
+  }
+
+  .listings-map-panel {
+    order: 1;
+  }
+
+  .listings-main {
+    order: 2;
+  }
+
+  .detail-right {
+    position: static;
+  }
+
+  .detail-contact-card,
+  .detail-map-wrap,
+  .detail-feature-map-box {
+    width: 100%;
+  }
+
+  .account-sidebar {
+    position: static;
+  }
+
+  .account-sidebar-nav {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .settings-nav {
+    position: static;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .settings-nav-item {
+    justify-content: center;
+    text-align: center;
+  }
+}
+
+@media (max-width: 760px) {
+  .container,
+  .nav-inner,
+  .footer-inner {
+    width: min(100% - 24px, 100%);
+  }
+
+  .nav-header {
+    min-height: 64px;
+  }
+
+  .nav-inner {
+    min-height: 64px;
+  }
+
+  .nav-right {
+    gap: 8px;
+  }
+
+  .nav-user-name,
+  .nav-chevron {
+    display: none;
+  }
+
+  .home-hero,
+  .home-hero-slide {
+    min-height: 86svh;
+  }
+
+  .home-hero-bottom {
+    grid-template-columns: 1fr;
+    padding-bottom: 28px;
+  }
+
+  .home-hero-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .home-hero-cta {
+    width: 100%;
+    min-height: 48px;
+  }
+
+  .home-luxury-title,
+  .section-intro h2,
+  .page-head h1,
+  .favorites-head h1 {
+    font-size: clamp(1.65rem, 8vw, 2.4rem);
+    line-height: 1.08;
+  }
+
+  .listings-sidebar {
+    border-radius: 16px;
+    padding: 14px;
+  }
+
+  .listings-sidebar .filter-mode-toggle,
+  .filter-room-pills {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .filter-room-pill,
+  .filter-mode-btn {
+    min-width: 0;
+    min-height: 44px;
+  }
+
+  .listings-main .listing-grid-2,
+  .favorites-grid,
+  .home-listing-grid,
+  .agents-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .listing-card {
+    width: 100%;
+  }
+
+  .listing-media,
+  .listings-main .listing-media {
+    aspect-ratio: 4 / 3;
+    min-height: 0;
+  }
+
+  .listing-title-overlay {
+    padding: 14px;
+  }
+
+  .listing-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .pagination-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .pagination-row .ghost-button {
+    width: 100%;
+  }
+
+  .detail-image-wrap,
+  .gallery-wrap {
+    min-height: 280px;
+    aspect-ratio: 4 / 3;
+  }
+
+  .detail-image-title-overlay {
+    padding: 20px;
+  }
+
+  .detail-location {
+    flex-wrap: wrap;
+  }
+
+  .detail-info-card,
+  .detail-contact-card,
+  .detail-map-wrap,
+  .detail-feature-map-box,
+  .detail-feature-side-box {
+    padding: 16px;
+  }
+
+  .detail-price {
+    font-size: clamp(1.55rem, 8vw, 2.2rem);
+  }
+
+  .detail-map-iframe {
+    min-height: 300px;
+  }
+
+  .similar-section-head {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .similar-card {
+    flex: 0 0 min(84vw, 320px);
+  }
+
+  .post-form,
+  .surface-panel,
+  .settings-content {
+    padding: 16px;
+  }
+
+  .post-grid-2,
+  .post-grid-3,
+  .post-feature-grid,
+  .admin-detail-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .post-map-picker {
+    min-height: 320px;
+  }
+
+  .post-image-row {
+    grid-template-columns: 76px minmax(0, 1fr);
+  }
+
+  .admin-listing-card {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-listing-media {
+    width: 100%;
+    min-height: 210px;
+  }
+
+  .admin-detail-body {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-detail-modal {
+    max-height: calc(100svh - 20px);
+    overflow-y: auto;
+  }
+
+  .auth-page-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-visual {
+    display: none;
+  }
+}
+
+@media (max-width: 520px) {
+  .container,
+  .nav-inner,
+  .footer-inner {
+    width: min(100% - 18px, 100%);
+  }
+
+  .nav-logo span {
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .nav-login-btn {
+    min-height: 40px;
+    padding-inline: 12px;
+  }
+
+  .nav-mobile {
+    max-height: calc(100svh - 78px);
+    overflow-y: auto;
+  }
+
+  .home-hero-title {
+    max-width: 10ch;
+  }
+
+  .home-hero-sub {
+    max-width: 36ch;
+  }
+
+  .home-hero-dots {
+    justify-content: flex-start;
+  }
+
+  .section,
+  .home-section {
+    padding-block: 24px;
+  }
+
+  .listings-sidebar .filter-header,
+  .filter-range-labels,
+  .filter-range-minmax {
+    gap: 8px;
+  }
+
+  .listings-map-panel,
+  .listings-map-custom {
+    height: 350px;
+    min-height: 300px;
+  }
+
+  .listings-map-popover {
+    max-width: calc(100vw - 42px);
+    transform: translate(-50%, calc(-100% - 18px));
+  }
+
+  .listing-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-badges {
+    position: absolute;
+    max-width: calc(100% - 24px);
+  }
+
+  .detail-title {
+    font-size: clamp(1.45rem, 9vw, 2.05rem);
+  }
+
+  .detail-chips,
+  .detail-feature-options-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .detail-chip,
+  .detail-feature-option {
+    min-height: 58px;
+  }
+
+  .detail-map-iframe {
+    min-height: 260px;
+  }
+
+  .similar-track {
+    gap: 12px;
+    padding-bottom: 8px;
+  }
+
+  .similar-card {
+    flex-basis: min(88vw, 300px);
+  }
+
+  .account-sidebar-user {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .account-sidebar-nav,
+  .settings-nav,
+  .admin-stats-row {
+    grid-template-columns: 1fr !important;
+  }
+
+  .settings-nav-item {
+    justify-content: flex-start;
+    text-align: left;
+  }
+
+  .post-image-row {
+    grid-template-columns: 1fr;
+  }
+
+  .post-image-preview {
+    width: 100%;
+    height: 170px;
+  }
+
+  .admin-detail-header {
+    align-items: flex-start;
+  }
+
+  .admin-detail-header h2 {
+    padding-right: 4px;
+  }
+
+  .auth-page-card {
+    border-radius: 18px;
+  }
+
+  .auth-tab-row {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-phone-row {
+    grid-template-columns: 1fr;
+  }
+
+  .ai-fab {
+    right: 14px;
+    bottom: 14px;
+  }
+
+  .ai-widget {
+    left: 10px;
+    right: 10px;
+    bottom: 78px;
+    width: auto;
+    border-radius: 18px;
+  }
+
+  .ai-widget-header-left span,
+  .ai-widget-suggestions {
+    display: none;
+  }
+}
+
+@media (max-width: 360px) {
+  .container,
+  .nav-inner,
+  .footer-inner {
+    width: min(100% - 12px, 100%);
+  }
+
+  .nav-logo span {
+    max-width: 120px;
+  }
+
+  .home-hero-title {
+    font-size: 2rem;
+  }
+
+  .solid-button,
+  .ghost-button,
+  .admin-btn,
+  .filter-mode-btn,
+  .filter-room-pill {
+    min-height: 44px;
+    padding-inline: 12px;
+  }
+
+  .detail-image-wrap,
+  .gallery-wrap {
+    min-height: 230px;
+  }
+
+  .detail-info-card,
+  .detail-contact-card,
+  .detail-map-wrap,
+  .detail-feature-map-box,
+  .detail-feature-side-box,
+  .post-form,
+  .surface-panel {
+    padding: 12px;
+  }
+
+  .auth-otp-box {
+    width: 34px;
+    height: 44px;
+  }
+}
