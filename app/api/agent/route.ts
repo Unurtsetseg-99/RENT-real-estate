@@ -401,15 +401,20 @@ function parseSearchArgs(message: string): SearchArgs {
 
 function parseNumberAfter(msg: string, words: string[]) {
   for (const word of words) {
-    const match = msg.match(new RegExp(`${word}\\s*[:=]?\\s*(\\d+(?:[.,]\\d+)?)`, "i"));
-    if (match) return Number(match[1].replace(",", "."));
+    const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const before = msg.match(new RegExp(`(?:^|[\\s,;])(\\d+(?:[.,]\\d+)?)\\s*${escaped}\\b`, "i"));
+    if (before) return Number(before[1].replace(",", "."));
+
+    const after = msg.match(new RegExp(`(?:^|[\\s,;])${escaped}\\b\\s*[:=]?\\s*(\\d+(?:[.,]\\d+)?)`, "i"));
+    if (after) return Number(after[1].replace(",", "."));
   }
   return undefined;
 }
 
 function parseTextAfter(message: string, words: string[]) {
   for (const word of words) {
-    const match = message.match(new RegExp(`${word}\\s*[:=]\\s*([^,\\n]+)`, "i"));
+    const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const match = message.match(new RegExp(`(?:^|[\\s,;])${escaped}\\b\\s*[:=]?\\s*([^,\\n]+)`, "i"));
     if (match) return match[1].trim();
   }
   return undefined;
@@ -426,25 +431,30 @@ function parseListingDraft(message: string): ListingDraft {
     price: searchArgs.max_price ?? searchArgs.min_price,
     bedrooms: searchArgs.bedrooms,
     feature_options: searchArgs.feature_options ?? [],
-    listing_type: includesAny(msg, ["rent", "turees", "for rent"]) ? "For Rent" : "For Sale",
+    listing_type: includesAny(msg, ["rent", "turees", "for rent"])
+      ? "For Rent"
+      : includesAny(msg, ["sale", "zarah", "for sale", "hudaldah"])
+        ? "For Sale"
+        : undefined,
   };
 
-  draft.title = parseTextAfter(stripped, ["title", "ner", "name"]);
+  draft.title = parseTextAfter(stripped, ["title", "garchig", "ner", "name"]);
   draft.description = parseTextAfter(stripped, ["description", "tailbar", "desc"]);
   draft.address = parseTextAfter(stripped, ["address", "hayag"]) || draft.district;
   draft.address_detail = parseTextAfter(stripped, ["detailed address", "address detail", "delgerengui hayag", "todorhoi hayag"]) || draft.address;
   draft.khoroo = parseTextAfter(stripped, ["khoroo", "horoo"]);
   draft.payment_terms = parseTextAfter(stripped, ["payment", "payment terms", "tolbor"]);
-  draft.floor = parseTextAfter(stripped, ["floor", "davhar"]);
+  const floorNumber = parseNumberAfter(msg, ["floor", "davhar"]);
+  draft.floor = floorNumber == null ? undefined : String(floorNumber);
   draft.window_direction = parseTextAfter(stripped, ["window direction", "window dir", "tsonhnii chig"]);
   draft.furnished = parseTextAfter(stripped, ["furnished", "taviltai"]);
 
-  draft.area_size = parseNumberAfter(msg, ["area", "talbai"]);
-  draft.bathrooms = parseNumberAfter(msg, ["bathroom", "bathrooms"]);
-  draft.toilets = parseNumberAfter(msg, ["toilet", "toilets", "00"]);
-  draft.total_floors = parseNumberAfter(msg, ["total floors", "niit davhar"]);
-  draft.windows = parseNumberAfter(msg, ["windows", "tsonh"]);
-  draft.built_year = parseNumberAfter(msg, ["built year", "year"]);
+  draft.area_size = parseNumberAfter(msg, ["area", "talbai", "m2", "м2"]);
+  draft.bathrooms = parseNumberAfter(msg, ["bathroom", "bathrooms", "bath", "ariun tsevriin oroo"]);
+  draft.toilets = parseNumberAfter(msg, ["toilet", "toilets", "00", "jorlon"]);
+  draft.total_floors = parseNumberAfter(msg, ["total floors", "niit davhar", "niit"]);
+  draft.windows = parseNumberAfter(msg, ["windows", "window", "tsonh"]);
+  draft.built_year = parseNumberAfter(msg, ["built year", "year", "ashiglaltand orson"]);
 
   const priceMatch = msg.match(/(?:price|une)\s*[:=]?\s*(\d+(?:[.,]\d+)?)(?:\s*(million|mln|say))?/i);
   if (priceMatch) {
@@ -457,20 +467,26 @@ function parseListingDraft(message: string): ListingDraft {
     if (millionMatch) draft.price = Math.round(Number(millionMatch[1].replace(",", ".")) * 1_000_000);
   }
 
-  if (includesAny(msg, ["balcony", "tagttai", "tagt"])) draft.balcony = "Yes";
-  if (includesAny(msg, ["garage", "garaj", "garajtai"])) draft.garage = "Yes";
-  if (includesAny(msg, ["no balcony", "tagtgui"])) draft.balcony = "No";
-  if (includesAny(msg, ["no garage", "garajgui"])) draft.garage = "No";
+  if (includesAny(msg, ["no balcony", "balcony no", "balcony: no", "tagtgui"])) draft.balcony = "No";
+  else if (includesAny(msg, ["balcony", "tagttai", "tagt"])) draft.balcony = "Yes";
+
+  if (includesAny(msg, ["no garage", "garage no", "garage: no", "garajgui"])) draft.garage = "No";
+  else if (includesAny(msg, ["garage", "garaj", "garajtai"])) draft.garage = "Yes";
 
   const latMatch = msg.match(/(?:lat|latitude)\s*[:=]?\s*(-?\d+(?:[.,]\d+)?)/i);
   const lngMatch = msg.match(/(?:lng|long|longitude)\s*[:=]?\s*(-?\d+(?:[.,]\d+)?)/i);
   if (latMatch) draft.latitude = Number(latMatch[1].replace(",", "."));
   if (lngMatch) draft.longitude = Number(lngMatch[1].replace(",", "."));
 
+  if (!draft.listing_type) {
+    const statusText = parseTextAfter(stripped, ["status", "turul", "zoriulalt"]);
+    if (statusText && normalizeText(statusText).includes("rent")) draft.listing_type = "For Rent";
+    if (statusText && normalizeText(statusText).includes("sale")) draft.listing_type = "For Sale";
+  }
+
   if (!draft.title && draft.district && draft.property_type) {
     draft.title = `${draft.district} ${draft.bedrooms ? `${draft.bedrooms}-room ` : ""}${draft.property_type}`;
   }
-  if (!draft.description) draft.description = stripped.trim() || undefined;
   draft.feature_options = Array.from(new Set(draft.feature_options ?? []));
   return draft;
 }
@@ -515,7 +531,7 @@ const listingQuestions: Array<{ key: keyof ListingDraft; label: string; example:
   { key: "balcony", label: "Balcony", example: "Yes / No", required: true },
   { key: "garage", label: "Garage", example: "Yes / No", required: true },
   { key: "payment_terms", label: "Payment terms", example: "6+1, mortgage, negotiable", required: true },
-  { key: "feature_options", label: "Advantages", example: "near school, mortgage available", required: true },
+  { key: "feature_options", label: "Advantages", example: "near school, mortgage available" },
   { key: "latitude", label: "Map latitude", example: "47.91317" },
   { key: "longitude", label: "Map longitude", example: "106.91355" },
 ];
@@ -636,7 +652,7 @@ export async function POST(req: NextRequest) {
     const user = getUser(req);
     let intent = parseIntent(message);
     if (body.data.draft && intent.tool !== "bulk") {
-      intent = { tool: "create_listing" as const, args: parseListingDraft(message) };
+      intent = { tool: "create_listing" as const, args: isConfirmMessage(message) ? {} : parseListingDraft(message) };
     }
 
     if (intent.tool === "bulk" && (!user || user.role !== "admin")) {
