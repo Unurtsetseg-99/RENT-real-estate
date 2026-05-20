@@ -27,6 +27,7 @@ export default function AuthPage() {
   const [name, setName] = useState("");
   const [countryCode, setCountryCode] = useState("+976");
   const [phone, setPhone] = useState("");
+  const [accountRole, setAccountRole] = useState<"user" | "agent">("user");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -123,7 +124,7 @@ export default function AuthPage() {
 
       setLoading(true);
       const fullPhone = `${countryCode}${phone.trim()}`;
-      const res = await register(name.trim(), fullPhone, email.trim(), password);
+      const res = await register(name.trim(), fullPhone, email.trim(), password, accountRole);
       setLoading(false);
       if (!res.ok) {
         setError(res.error ?? "Registration failed.");
@@ -188,7 +189,7 @@ export default function AuthPage() {
       }
 
       const fullPhone = `${countryCode}${phone.trim()}`;
-      const regRes = await register(name.trim(), fullPhone, email.trim(), password);
+      const regRes = await register(name.trim(), fullPhone, email.trim(), password, accountRole);
       if (!regRes.ok) {
         setError(regRes.error ?? "Бүртгэл амжилтгүй боллоо.");
         return;
@@ -207,6 +208,7 @@ export default function AuthPage() {
     setError("");
     setPassword("");
     setConfirmPassword("");
+    setAccountRole("user");
     setOtp(["", "", "", "", "", ""]);
   };
 
@@ -336,6 +338,14 @@ export default function AuthPage() {
                     </select>
                     <input className="auth-phone-input" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="99xxxxxx" autoComplete="tel" />
                   </div>
+                </label>
+
+                <label className="field">
+                  <span>Account type</span>
+                  <select value={accountRole} onChange={(e) => setAccountRole(e.target.value as "user" | "agent")}>
+                    <option value="user">User</option>
+                    <option value="agent">Agent</option>
+                  </select>
                 </label>
               </>
             )}

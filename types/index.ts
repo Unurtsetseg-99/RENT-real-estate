@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-export type UserRole = "guest" | "user" | "admin" | "moderator";
+export type UserRole = "guest" | "user" | "agent" | "admin" | "moderator";
 export type ListingStatusValue = "For Sale" | "For Rent";
 export type ListingStatusId = "sale" | "rent";
 
@@ -26,7 +26,7 @@ export interface AuthResult {
 }
 
 export interface AuthContextValue extends SessionState {
-  register: (name: string, phone: string, email: string, password: string) => Promise<AuthResult>;
+  register: (name: string, phone: string, email: string, password: string, role?: "user" | "agent") => Promise<AuthResult>;
   login: (identifier: string, password: string) => Promise<AuthResult>;
   updateSession: (session: Partial<SessionState>) => void;
   logout: () => void;

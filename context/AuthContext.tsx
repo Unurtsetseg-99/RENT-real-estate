@@ -29,7 +29,7 @@ function clearSession() {
 }
 
 function toRole(role: unknown): UserRole {
-  return role === "admin" || role === "moderator" || role === "user" ? role : "user";
+  return role === "admin" || role === "moderator" || role === "agent" || role === "user" ? role : "user";
 }
 
 export function AuthProvider({ children }: ChildrenProps) {
@@ -66,18 +66,18 @@ export function AuthProvider({ children }: ChildrenProps) {
     }
   }, [session, mounted]);
 
-  const register = useCallback(async (name: string, phone: string, email: string, password: string) => {
+  const register = useCallback(async (name: string, phone: string, email: string, password: string, role: "user" | "agent" = "user") => {
     const res = await fetch("/api/auth/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ full_name: name, phone, email, password }),
+      body: JSON.stringify({ full_name: name, phone, email, password, role }),
     });
     const data = await res.json();
     if (!res.ok) return { ok: false, error: data.error ?? "Registration failed." };
 
     const nextSession: SessionState = {
       isAuthenticated: true,
-      role: data.user?.role ?? "user",
+      role: toRole(data.user?.role),
       fullName: data.user?.full_name ?? name,
       token: data.token,
     };
@@ -104,7 +104,7 @@ export function AuthProvider({ children }: ChildrenProps) {
 
     const nextSession: SessionState = {
       isAuthenticated: true,
-      role: data.user?.role ?? "user",
+      role: toRole(data.user?.role),
       fullName: data.user?.full_name ?? "User",
       token: data.token,
     };
