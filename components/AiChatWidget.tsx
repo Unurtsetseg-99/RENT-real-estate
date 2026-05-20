@@ -73,6 +73,9 @@ export default function AiChatWidget() {
         body: JSON.stringify({ message: text, draft, awaitingConfirmation }),
       });
       const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || data.message || `AI request failed (${res.status})`);
+      }
       setDraft(data.draft);
       setAwaitingConfirmation(Boolean(data.awaitingConfirmation));
       if (data.tool === "create_listing" && !data.awaitingConfirmation && !data.draft) {
@@ -84,11 +87,12 @@ export default function AiChatWidget() {
         text: data.reply || "I could not find a good answer.",
         results: data.results,
       }]);
-    } catch {
+    } catch (e) {
+      const errorMessage = e instanceof Error ? e.message : "Could not connect to the search service.";
       setMessages((m) => [...m, {
         id: Date.now() + 1,
         role: "assistant",
-        text: "Could not connect to the search service.",
+        text: errorMessage,
       }]);
     } finally {
       setLoading(false);
