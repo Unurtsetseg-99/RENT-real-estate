@@ -10786,7 +10786,9 @@ img {
   position: relative;
   z-index: 1;
   font-size: 1.85rem;
-  font-weight: 900;
+  font-family: "Crimson Pro", serif;
+  font-weight: 400;
+  color: var(--gold);
 }
 
 .auth-visual-copy {
@@ -10925,8 +10927,8 @@ img {
 }
 
 .auth-role-card.active {
-  border-color: #111111;
-  background: #111111;
+  border-color: var(--gold);
+  background: var(--gold);
   color: #ffffff;
 }
 
@@ -10938,6 +10940,7 @@ img {
   margin: -2px 0 0;
   padding: 10px 12px;
   border: 1px solid #ded8d2;
+  border-radius: 10px;
   background: #faf8f5;
   color: #33383f;
   font-size: 0.86rem;
@@ -10997,9 +11000,9 @@ img {
 
 .auth-page-shell .field input:focus,
 .auth-page-shell .field select:focus {
-  outline: 2px solid #111111;
+  outline: 2px solid var(--gold);
   outline-offset: -2px;
-  border-color: #111111;
+  border-color: var(--gold);
 }
 
 .auth-page-shell .auth-phone-row {
@@ -11032,7 +11035,7 @@ img {
 .auth-submit-btn {
   min-height: 50px;
   margin-top: 4px;
-  border-radius: 0;
+  border-radius: 10px;
   background: #000000 !important;
   color: #ffffff !important;
   box-shadow: 0 14px 24px rgba(0, 0, 0, 0.12);
@@ -11043,7 +11046,7 @@ img {
 }
 
 .auth-submit-btn:hover {
-  background: #1f1f1f !important;
+  background: var(--gold) !important;
 }
 
 .auth-page-shell .auth-divider {
@@ -11062,7 +11065,7 @@ img {
   min-height: 50px;
   padding: 0 16px;
   border: 1px solid #babec3;
-  border-radius: 0;
+  border-radius: 10px;
   background: #ffffff;
   color: #111111;
   font-size: 1rem;
@@ -11070,8 +11073,45 @@ img {
 }
 
 .auth-page-shell .auth-google-btn:hover {
-  border-color: #111111;
-  background: #ffffff;
+  border-color: var(--gold);
+  background: var(--gold);
+  color: #ffffff;
+}
+
+.auth-role-card:hover,
+.auth-role-card:focus-visible,
+.auth-role-note:hover,
+.auth-page-shell #auth-email:hover,
+.auth-page-shell #auth-password:hover,
+.auth-page-shell #auth-name:hover,
+.auth-page-shell .auth-country-select:hover,
+.auth-page-shell .auth-phone-input:hover,
+.auth-submit-btn:focus-visible,
+.auth-page-shell .auth-google-btn:focus-visible {
+  border-color: var(--gold);
+  outline: 2px solid var(--gold);
+  outline-offset: -2px;
+}
+
+.auth-role-card:hover,
+.auth-role-card:focus-visible,
+.auth-submit-btn:focus-visible,
+.auth-page-shell .auth-google-btn:focus-visible {
+  background: var(--gold) !important;
+  color: #ffffff;
+}
+
+.auth-role-card:hover span,
+.auth-role-card:focus-visible span {
+  color: rgba(255,255,255,0.72);
+}
+
+.auth-page-shell #auth-email,
+.auth-page-shell #auth-password,
+.auth-page-shell #auth-name,
+.auth-page-shell .auth-country-select,
+.auth-page-shell .auth-phone-input {
+  border-radius: 10px;
 }
 
 .auth-page-footer {
@@ -12030,6 +12070,7 @@ body {
 .auth-phone-input {
   max-width: 100%;
   min-width: 0;
+  border-radius: 10px;
 }
 
 .detail-image-wrap,
