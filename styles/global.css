@@ -10903,7 +10903,7 @@ img {
   min-height: 76px;
   padding: 12px;
   border: 1px solid #cfc7bf;
-  border-radius: 0;
+  border-radius: 10px;
   background: #ffffff;
   color: #111111;
   text-align: left;
@@ -10985,7 +10985,7 @@ img {
   min-height: 48px;
   padding: 0 14px;
   border: 1px solid #babec3;
-  border-radius: 0;
+  border-radius: 10px;
   background: #ffffff;
   color: #101418;
   font-size: 0.95rem;
