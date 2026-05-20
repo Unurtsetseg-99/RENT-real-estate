@@ -16,13 +16,6 @@ const COUNTRY_CODES = [
 ];
 
 type Step = "form" | "otp";
-type AuthRole = "user" | "agent" | "admin";
-
-const ROLE_OPTIONS: Array<{ id: AuthRole; label: string; desc: string }> = [
-  { id: "user", label: "User", desc: "Browse, save, and post listings" },
-  { id: "agent", label: "Agent", desc: "Agent account for property work" },
-  { id: "admin", label: "Admin", desc: "Admin panel access" },
-];
 
 export default function AuthPage() {
   const router = useRouter();
@@ -34,7 +27,7 @@ export default function AuthPage() {
   const [name, setName] = useState("");
   const [countryCode, setCountryCode] = useState("+976");
   const [phone, setPhone] = useState("");
-  const [accountRole, setAccountRole] = useState<AuthRole>("user");
+  const accountRole = "user" as const;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -128,11 +121,6 @@ export default function AuthPage() {
         setError("Passwords do not match.");
         return;
       }
-      if (accountRole === "admin") {
-        setError("Admin accounts cannot be registered from this page. Please log in with an existing admin account.");
-        return;
-      }
-
       setLoading(true);
       const fullPhone = `${countryCode}${phone.trim()}`;
       const res = await register(name.trim(), fullPhone, email.trim(), password, accountRole);
@@ -150,10 +138,6 @@ export default function AuthPage() {
       const res = await login(email.trim(), password);
       if (!res.ok) {
         setError(res.error ?? "Login failed.");
-        return;
-      }
-      if (accountRole !== res.role) {
-        setError(`This account is registered as ${res.role ?? "another role"}. Please choose the correct account type.`);
         return;
       }
       router.push(res.role === "admin" ? "/admin" : "/listings");
@@ -204,10 +188,6 @@ export default function AuthPage() {
       }
 
       const fullPhone = `${countryCode}${phone.trim()}`;
-      if (accountRole === "admin") {
-        setError("Admin accounts cannot be registered from this page.");
-        return;
-      }
       const regRes = await register(name.trim(), fullPhone, email.trim(), password, accountRole);
       if (!regRes.ok) {
         setError(regRes.error ?? "Бүртгэл амжилтгүй боллоо.");
@@ -222,20 +202,12 @@ export default function AuthPage() {
   };
 
   const switchMode = (nextMode: string) => {
-    if (accountRole === "admin" && nextMode === "register") return;
     setMode(nextMode);
     setStep("form");
     setError("");
     setPassword("");
     setConfirmPassword("");
-    setAccountRole("user");
     setOtp(["", "", "", "", "", ""]);
-  };
-
-  const chooseRole = (role: AuthRole) => {
-    setAccountRole(role);
-    setError("");
-    if (role === "admin") setMode("login");
   };
 
   const handleGoogleSignIn = async () => {
@@ -329,32 +301,16 @@ export default function AuthPage() {
 
           <div className="auth-page-heading">
             <h1>Welcome</h1>
-            <p>Choose how you want to enter the system.</p>
-          </div>
-
-          <div className="auth-role-row" aria-label="Choose account type">
-            {ROLE_OPTIONS.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                className={`auth-role-card${accountRole === item.id ? " active" : ""}`}
-                onClick={() => chooseRole(item.id)}
-              >
-                <strong>{item.label}</strong>
-                <span>{item.desc}</span>
-              </button>
-            ))}
+            <p>Log in to your account or create a new one.</p>
           </div>
 
           <div className="auth-tab-row">
             <button type="button" className={mode === "login" ? "auth-tab active" : "auth-tab"} onClick={() => switchMode("login")}>
               Log In
             </button>
-            {accountRole !== "admin" && (
-              <button type="button" className={mode === "register" ? "auth-tab active" : "auth-tab"} onClick={() => switchMode("register")}>
-                Register
-              </button>
-            )}
+            <button type="button" className={mode === "register" ? "auth-tab active" : "auth-tab"} onClick={() => switchMode("register")}>
+              Register
+            </button>
           </div>
 
           <form className="auth-form" onSubmit={handleFormSubmit}>
@@ -385,8 +341,6 @@ export default function AuthPage() {
                     <input id="auth-phone" name="phone" className="auth-phone-input" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="99xxxxxx" autoComplete="tel" />
                   </div>
                 </label>
-
-                <p className="auth-role-note">Registering as <strong>{accountRole === "agent" ? "Agent" : "User"}</strong>.</p>
               </>
             )}
 
