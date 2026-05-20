@@ -23,6 +23,9 @@
 # misc
 .DS_Store
 *.pem
+.agents/
+skills-lock.json
+*.bak
 
 # debug
 npm-debug.log*
