@@ -9879,6 +9879,24 @@ img {
   transform: translate(-50%, -100%) rotate(-45deg) scale(1.12);
 }
 
+.listings-map-pin.pin-sale {
+  background: #2563eb;
+}
+
+.listings-map-pin.pin-rent {
+  background: #dc2626;
+}
+
+.listings-map-pin.pin-sale:hover,
+.listings-map-pin.pin-sale:focus-visible {
+  background: #1d4ed8;
+}
+
+.listings-map-pin.pin-rent:hover,
+.listings-map-pin.pin-rent:focus-visible {
+  background: #b91c1c;
+}
+
 .listings-map-popover {
   position: absolute;
   z-index: 4;
@@ -9987,6 +10005,81 @@ img {
 
 .listings-map-zoom button:hover {
   background: #fff;
+}
+
+.map-page {
+  min-height: calc(100svh - 72px);
+  padding: 92px 18px 18px;
+  background: #f4efeb;
+}
+
+.map-page-toolbar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+  width: min(1440px, 100%);
+  margin: 0 auto 14px;
+}
+
+.map-page-toolbar h1 {
+  margin: 4px 0 0;
+  color: #2f2f2f;
+  font-size: clamp(1.7rem, 3vw, 2.65rem);
+  line-height: 1.05;
+}
+
+.map-page-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.map-page-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 8px 12px;
+  border: 1px solid rgba(70,70,70,0.12);
+  border-radius: 999px;
+  background: rgba(255,255,255,0.86);
+  color: #2f2f2f;
+  font-size: 0.82rem;
+  font-weight: 800;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.08);
+}
+
+.map-page-legend i {
+  width: 12px;
+  height: 12px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.22);
+}
+
+.map-page-legend i.sale {
+  background: #2563eb;
+}
+
+.map-page-legend i.rent {
+  background: #dc2626;
+}
+
+.map-page-shell {
+  width: min(1440px, 100%);
+  height: calc(100svh - 168px);
+  min-height: 560px;
+  margin: 0 auto;
+  border: 1px solid rgba(70,70,70,0.16);
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.16);
+}
+
+.map-page-map {
+  height: 100%;
 }
 
 .listings-main {
@@ -12176,6 +12269,25 @@ body {
   .auth-visual {
     display: none;
   }
+
+  .map-page {
+    padding: 78px 12px 12px;
+  }
+
+  .map-page-toolbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .map-page-legend {
+    justify-content: flex-start;
+  }
+
+  .map-page-shell {
+    height: calc(100svh - 190px);
+    min-height: 440px;
+    border-radius: 14px;
+  }
 }
 
 @media (max-width: 520px) {
@@ -12333,6 +12445,20 @@ body {
   .ai-widget-header-left span,
   .ai-widget-suggestions {
     display: none;
+  }
+
+  .map-page-shell {
+    height: calc(100svh - 210px);
+    min-height: 380px;
+  }
+
+  .map-page-legend {
+    width: 100%;
+  }
+
+  .map-page-legend span {
+    flex: 1 1 140px;
+    justify-content: center;
   }
 }
 

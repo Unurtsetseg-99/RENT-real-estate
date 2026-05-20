@@ -67,6 +67,7 @@ export default function Navigation() {
 
   const menuItems = [
     { label: t.nav.listings, to: "/listings", authRequired: true, adminHide: true },
+    { label: "Map", to: "/map", authRequired: true, adminHide: true },
     { label: "Agent", to: "/agents", authRequired: true, adminHide: true },
   ];
 
@@ -176,6 +177,7 @@ export default function Navigation() {
           {auth ? (
             <>
               {role !== "admin" && <Link href="/post" className="nav-mobile-item">+ Post property</Link>}
+              {role !== "admin" && <Link href="/map" className="nav-mobile-item">Map</Link>}
               {role !== "admin" && <Link href="/profile" className="nav-mobile-item">Profile</Link>}
               {role !== "admin" && <Link href="/my-listings" className="nav-mobile-item">My properties</Link>}
               {role !== "admin" && <Link href="/favorites" className="nav-mobile-item">Favorites</Link>}
