@@ -336,6 +336,8 @@ function ListingsContent() {
             <div className="filter-group">
               <span className="filter-group-label">Location</span>
               <select
+                id="filter-district"
+                name="district"
                 className="filter-select-rounded"
                 value={district}
                 onChange={(e) => { setDistrict(e.target.value); setCurrentPage(1); }}
@@ -361,6 +363,8 @@ function ListingsContent() {
                 />
                 <input
                   type="range"
+                  id="filter-price-min"
+                  name="minPrice"
                   className="filter-range-input"
                   min={priceMin}
                   max={priceMax}
@@ -370,6 +374,8 @@ function ListingsContent() {
                 />
                 <input
                   type="range"
+                  id="filter-price-max"
+                  name="maxPrice"
                   className="filter-range-input"
                   min={priceMin}
                   max={priceMax}
@@ -388,6 +394,8 @@ function ListingsContent() {
             <div className="filter-group">
               <span className="filter-group-label">Property Type</span>
               <select
+                id="filter-property-type"
+                name="propertyType"
                 className="filter-select-rounded"
                 value={propType}
                 onChange={(e) => {
@@ -408,6 +416,8 @@ function ListingsContent() {
                 <span className="filter-group-label">Payment terms</span>
                 <select
                   className="filter-select-rounded"
+                  id="filter-payment-term"
+                  name="paymentTerm"
                   value={paymentTerm}
                   onChange={(e) => { setPaymentTerm(e.target.value); setCurrentPage(1); }}
                 >

@@ -286,20 +286,20 @@ export default function PostPage() {
           <div className="post-section-title">Basic information</div>
 
           <Field label="Title">
-            <input type="text" value={form.title} onChange={(e) => set("title", e.target.value)} placeholder="e.g. 3-room apartment in Khan-Uul" />
+            <input id="post-title" name="title" type="text" value={form.title} onChange={(e) => set("title", e.target.value)} placeholder="e.g. 3-room apartment in Khan-Uul" />
           </Field>
           <Field label="Description">
-            <textarea className="post-textarea" value={form.description} onChange={(e) => set("description", e.target.value)} placeholder="Detailed description..." rows={4} />
+            <textarea id="post-description" name="description" className="post-textarea" value={form.description} onChange={(e) => set("description", e.target.value)} placeholder="Detailed description..." rows={4} />
           </Field>
 
           <div className="post-grid-2">
             <Field label="Property type">
-              <select value={form.type} onChange={(e) => set("type", e.target.value)}>
+              <select id="post-type" name="type" value={form.type} onChange={(e) => set("type", e.target.value)}>
                 {propertyTypes.map((tp) => <option key={tp} value={tp}>{t.type?.[tp] || tp}</option>)}
               </select>
             </Field>
             <Field label="Listing type">
-              <select value={form.status} onChange={(e) => set("status", e.target.value)}>
+              <select id="post-status" name="status" value={form.status} onChange={(e) => set("status", e.target.value)}>
                 {statusOptions.map((s) => <option key={s} value={s}>{statusLabels[s]}</option>)}
               </select>
             </Field>
@@ -308,6 +308,8 @@ export default function PostPage() {
           <Field label="Detailed address">
             <textarea
               className="post-textarea"
+              id="post-address-detail"
+              name="addressDetail"
               value={form.addressDetail}
               onChange={(e) => set("addressDetail", e.target.value)}
               placeholder="Building name, street, landmark, entrance, apartment details..."
@@ -330,23 +332,23 @@ export default function PostPage() {
             </div>
             <div className="post-grid-2">
               <Field label="Latitude">
-                <input type="number" step="0.000001" value={form.latitude} onChange={(e) => set("latitude", e.target.value)} />
+                <input id="post-latitude" name="latitude" type="number" step="0.000001" value={form.latitude} onChange={(e) => set("latitude", e.target.value)} />
               </Field>
               <Field label="Longitude">
-                <input type="number" step="0.000001" value={form.longitude} onChange={(e) => set("longitude", e.target.value)} />
+                <input id="post-longitude" name="longitude" type="number" step="0.000001" value={form.longitude} onChange={(e) => set("longitude", e.target.value)} />
               </Field>
             </div>
           </div>
 
           <div className="post-grid-2">
             <Field label="District">
-              <select value={form.district} onChange={(e) => { set("district", e.target.value); set("khoroo", ""); }}>
+              <select id="post-district" name="district" value={form.district} onChange={(e) => { set("district", e.target.value); set("khoroo", ""); }}>
                 <option value="">Select district</option>
                 {districts.map((d) => <option key={d} value={d}>{t.district?.[d] || d}</option>)}
               </select>
             </Field>
             <Field label="Khoroo">
-              <select value={form.khoroo} onChange={(e) => set("khoroo", e.target.value)} disabled={!form.district}>
+              <select id="post-khoroo" name="khoroo" value={form.khoroo} onChange={(e) => set("khoroo", e.target.value)} disabled={!form.district}>
                 <option value="">{form.district ? "Select khoroo" : "Select district first"}</option>
                 {khoroos.map((k) => <option key={k} value={k}>{k}</option>)}
               </select>
@@ -355,42 +357,42 @@ export default function PostPage() {
 
           <div className="post-grid-2">
             <Field label="Price (₮)">
-              <input type="number" value={form.price} onChange={(e) => set("price", e.target.value)} placeholder="450000000" min={0} />
+              <input id="post-price" name="price" type="number" value={form.price} onChange={(e) => set("price", e.target.value)} placeholder="450000000" min={0} />
             </Field>
             <Field label="Area (m²)">
-              <input type="number" value={form.area} onChange={(e) => set("area", e.target.value)} placeholder="85" min={0} />
+              <input id="post-area" name="area" type="number" value={form.area} onChange={(e) => set("area", e.target.value)} placeholder="85" min={0} />
             </Field>
           </div>
 
           <div className="post-section-title">Room details</div>
           <div className="post-grid-3">
-            <Field label="Rooms"><input type="number" value={form.rooms} onChange={(e) => set("rooms", e.target.value)} placeholder="3" min={0} /></Field>
-            <Field label="Bathrooms"><input type="number" value={form.bathrooms} onChange={(e) => set("bathrooms", e.target.value)} placeholder="1" min={0} /></Field>
-            <Field label="Bedrooms"><input type="number" value={form.toilets} onChange={(e) => set("toilets", e.target.value)} placeholder="2" min={0} /></Field>
+            <Field label="Rooms"><input id="post-rooms" name="rooms" type="number" value={form.rooms} onChange={(e) => set("rooms", e.target.value)} placeholder="3" min={0} /></Field>
+            <Field label="Bathrooms"><input id="post-bathrooms" name="bathrooms" type="number" value={form.bathrooms} onChange={(e) => set("bathrooms", e.target.value)} placeholder="1" min={0} /></Field>
+            <Field label="Bedrooms"><input id="post-toilets" name="toilets" type="number" value={form.toilets} onChange={(e) => set("toilets", e.target.value)} placeholder="2" min={0} /></Field>
           </div>
 
           <div className="post-section-title">Building details</div>
           <div className="post-grid-3">
-            <Field label="Total floors"><input type="number" value={form.totalFloors} onChange={(e) => set("totalFloors", e.target.value)} placeholder="16" min={1} /></Field>
+            <Field label="Total floors"><input id="post-total-floors" name="totalFloors" type="number" value={form.totalFloors} onChange={(e) => set("totalFloors", e.target.value)} placeholder="16" min={1} /></Field>
             <Field label="Floor">
-              <select value={form.floor} onChange={(e) => set("floor", e.target.value)}>
+              <select id="post-floor" name="floor" value={form.floor} onChange={(e) => set("floor", e.target.value)}>
                 <option value="">Select</option>
                 {floorOptions.map((f) => <option key={f} value={f}>{f}</option>)}
               </select>
             </Field>
-            <Field label="Built year"><input type="number" value={form.builtYear} onChange={(e) => set("builtYear", e.target.value)} placeholder="2018" min={1900} max={2030} /></Field>
+            <Field label="Built year"><input id="post-built-year" name="builtYear" type="number" value={form.builtYear} onChange={(e) => set("builtYear", e.target.value)} placeholder="2018" min={1900} max={2030} /></Field>
           </div>
 
           <div className="post-grid-3">
-            <Field label="Windows"><input type="number" value={form.windows} onChange={(e) => set("windows", e.target.value)} placeholder="6" min={0} /></Field>
+            <Field label="Windows"><input id="post-windows" name="windows" type="number" value={form.windows} onChange={(e) => set("windows", e.target.value)} placeholder="6" min={0} /></Field>
             <Field label="Window direction">
-              <select value={form.windowDir} onChange={(e) => set("windowDir", e.target.value)}>
+              <select id="post-window-dir" name="windowDir" value={form.windowDir} onChange={(e) => set("windowDir", e.target.value)}>
                 <option value="">Select</option>
                 {windowDirOptions.map((d) => <option key={d} value={d}>{d}</option>)}
               </select>
             </Field>
             <Field label="Furnished">
-              <select value={form.furnished} onChange={(e) => set("furnished", e.target.value)}>
+              <select id="post-furnished" name="furnished" value={form.furnished} onChange={(e) => set("furnished", e.target.value)}>
                 <option value="">Select</option>
                 {furnishedOptions.map((f) => <option key={f} value={f}>{f}</option>)}
               </select>
@@ -399,21 +401,21 @@ export default function PostPage() {
 
           <div className="post-grid-3">
             <Field label="Balcony">
-              <select value={form.balcony} onChange={(e) => set("balcony", e.target.value)}>
+              <select id="post-balcony" name="balcony" value={form.balcony} onChange={(e) => set("balcony", e.target.value)}>
                 <option value="">Select</option>
                 <option value="Yes">Yes</option>
                 <option value="No">No</option>
               </select>
             </Field>
             <Field label="Garage">
-              <select value={form.garage} onChange={(e) => set("garage", e.target.value)}>
+              <select id="post-garage" name="garage" value={form.garage} onChange={(e) => set("garage", e.target.value)}>
                 <option value="">Select</option>
                 <option value="Yes">Yes</option>
                 <option value="No">No</option>
               </select>
             </Field>
             <Field label="Payment terms">
-              <select value={form.payment} onChange={(e) => set("payment", e.target.value)}>
+              <select id="post-payment" name="payment" value={form.payment} onChange={(e) => set("payment", e.target.value)}>
                 <option value="">Select</option>
                 {paymentOptions.map((p) => <option key={p} value={p}>{p}</option>)}
               </select>
@@ -425,6 +427,8 @@ export default function PostPage() {
             {featureOptions.map((option) => (
               <label key={option.id} className="post-feature-option">
                 <input
+                  id={`post-feature-${option.id}`}
+                  name="features"
                   type="checkbox"
                   checked={selectedFeatures.includes(option.id)}
                   onChange={() => toggleFeature(option.id)}
@@ -438,6 +442,8 @@ export default function PostPage() {
               {customAdvantages.map((advantage, i) => (
                 <div key={i} className="post-custom-advantage-row">
                   <input
+                    id={`post-custom-advantage-${i}`}
+                    name={`customAdvantage-${i}`}
                     type="text"
                     value={advantage}
                     onChange={(e) => updateCustomAdvantage(i, e.target.value)}
@@ -471,9 +477,9 @@ export default function PostPage() {
               <div key={i} className="post-image-row">
                 <label className="post-image-file-btn">
                   📷 Choose photo
-                  <input type="file" accept="image/*" style={{ display: "none" }} onChange={(e) => handleImageFile(i, e.target.files[0])} />
+                  <input id={`post-image-file-${i}`} name={`imageFile-${i}`} type="file" accept="image/*" style={{ display: "none" }} onChange={(e) => handleImageFile(i, e.target.files[0])} />
                 </label>
-                <input type="url" className="post-image-input" value={url.startsWith("data:") ? "" : url}
+                <input id={`post-image-url-${i}`} name={`imageUrl-${i}`} type="url" className="post-image-input" value={url.startsWith("data:") ? "" : url}
                   onChange={(e) => { const next = [...images]; next[i] = e.target.value; setImages(next); }}
                   placeholder={url.startsWith("data:") ? "Photo selected" : `Image URL ${i + 1}`} />
                 {url && <img src={url} alt="preview" className="post-image-preview" />}

@@ -270,6 +270,8 @@ export default function AuthPage() {
                     otpRefs.current[i] = el;
                   }}
                   className={`auth-otp-box${digit ? " filled" : ""}`}
+                  id={`otp-${i}`}
+                  name={`otp-${i}`}
                   type="text"
                   inputMode="numeric"
                   maxLength={1}
@@ -360,7 +362,7 @@ export default function AuthPage() {
               <>
                 <label className="field">
                   <span>Name</span>
-                  <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" autoComplete="name" />
+                  <input id="auth-name" name="name" type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" autoComplete="name" />
                 </label>
 
                 <label className="field">
@@ -368,6 +370,8 @@ export default function AuthPage() {
                   <div className="auth-phone-row">
                     <select
                       className="auth-country-select"
+                      id="auth-country-code"
+                      name="countryCode"
                       value={countryCode}
                       onChange={(e) => setCountryCode(e.target.value)}
                       style={{ width: "100px", minWidth: "100px", maxWidth: "100px" }}
@@ -378,7 +382,7 @@ export default function AuthPage() {
                         </option>
                       ))}
                     </select>
-                    <input className="auth-phone-input" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="99xxxxxx" autoComplete="tel" />
+                    <input id="auth-phone" name="phone" className="auth-phone-input" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="99xxxxxx" autoComplete="tel" />
                   </div>
                 </label>
 
@@ -388,13 +392,13 @@ export default function AuthPage() {
 
             <label className="field">
               <span>{mode === "login" ? "Email or phone number" : "Email"}</span>
-              <input type="text" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={mode === "login" ? "Example: user@email.com" : "user@example.com"} autoComplete="email" />
+              <input id="auth-email" name="email" type="text" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={mode === "login" ? "Example: user@email.com" : "user@example.com"} autoComplete="email" />
             </label>
 
             <label className="field">
               <span>Password</span>
               <div className="auth-password-wrap">
-                <input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" autoComplete={mode === "register" ? "new-password" : "current-password"} />
+                <input id="auth-password" name="password" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" autoComplete={mode === "register" ? "new-password" : "current-password"} />
                 <button type="button" className="auth-eye-btn" onClick={() => setShowPassword((v) => !v)} tabIndex={-1} aria-label={showPassword ? "Нууц үг нуух" : "Нууц үг харах"}>
                   {showPassword ? <EyeOff /> : <EyeOn />}
                 </button>
@@ -405,7 +409,7 @@ export default function AuthPage() {
               <label className="field">
                 <span>Confirm Password</span>
                 <div className={`auth-password-wrap${passwordsMismatch ? " mismatch" : passwordsMatch ? " match" : ""}`}>
-                  <input type={showConfirm ? "text" : "password"} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="••••••••" autoComplete="new-password" />
+                  <input id="auth-confirm-password" name="confirmPassword" type={showConfirm ? "text" : "password"} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="••••••••" autoComplete="new-password" />
                   <button type="button" className="auth-eye-btn" onClick={() => setShowConfirm((v) => !v)} tabIndex={-1} aria-label={showConfirm ? "Нууц үг нуух" : "Нууц үг харах"}>
                     {showConfirm ? <EyeOff /> : <EyeOn />}
                   </button>

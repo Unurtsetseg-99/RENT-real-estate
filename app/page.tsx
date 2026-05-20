@@ -394,6 +394,8 @@ const formatCompactPrice = (price: number) =>
             )}
             <form className="home-newsletter-form" onSubmit={handleNewsletterSubmit}>
               <input 
+                id="newsletter-name"
+                name="name"
                 type="text" 
                 placeholder="Name*" 
                 className="home-newsletter-input"
@@ -402,6 +404,8 @@ const formatCompactPrice = (price: number) =>
                 required
               />
               <input 
+                id="newsletter-email"
+                name="email"
                 type="email" 
                 placeholder="Email*" 
                 className="home-newsletter-input"
@@ -417,6 +421,7 @@ const formatCompactPrice = (price: number) =>
               <input 
                 type="checkbox" 
                 id="newsletter-consent" 
+                name="newsletterConsent"
                 className="home-newsletter-checkbox"
                 checked={newsletterConsent}
                 onChange={(e) => setNewsletterConsent(e.target.checked)}

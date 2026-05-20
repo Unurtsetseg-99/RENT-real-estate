@@ -125,15 +125,15 @@ export default function ProfilePage() {
               <form className="post-form" onSubmit={handleSave}>
                 <label className="field">
                   <span>Full name</span>
-                  <input type="text" value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} />
+                  <input id="profile-name" name="name" type="text" value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} />
                 </label>
                 <label className="field">
                   <span>Phone</span>
-                  <input type="tel" value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} placeholder="99xxxxxx" />
+                  <input id="profile-phone" name="phone" type="tel" value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} placeholder="99xxxxxx" />
                 </label>
                 <label className="field">
                   <span>Email</span>
-                  <input type="email" value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} placeholder="user@example.com" />
+                  <input id="profile-email" name="email" type="email" value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} placeholder="user@example.com" />
                 </label>
                 {error && <p className="auth-error">{error}</p>}
                 {saved && <p className="auth-success">{saved}</p>}

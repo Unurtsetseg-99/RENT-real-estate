@@ -80,6 +80,8 @@ export default function MessagesPage() {
                 </div>
                 <form className="msg-reply-form" onSubmit={(e) => { e.preventDefault(); setReply(""); }}>
                   <input
+                    id="message-reply"
+                    name="reply"
                     type="text"
                     placeholder="Write a reply..."
                     value={reply}

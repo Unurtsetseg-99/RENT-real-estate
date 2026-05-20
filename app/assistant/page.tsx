@@ -158,6 +158,8 @@ export default function AssistantPage() {
         <form className="assistant-input-row" onSubmit={(e) => { e.preventDefault(); sendMessage(input); }}>
           <input
             ref={inputRef}
+            id="assistant-input"
+            name="assistantMessage"
             className="assistant-input"
             value={input}
             onChange={(e) => setInput(e.target.value)}

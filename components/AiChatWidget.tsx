@@ -199,6 +199,8 @@ export default function AiChatWidget() {
           <form className="ai-widget-input-row" onSubmit={(e) => { e.preventDefault(); send(input); }}>
             <input
               ref={inputRef}
+              id="ai-widget-input"
+              name="aiMessage"
               className="ai-widget-input"
               value={input}
               onChange={(e) => setInput(e.target.value)}

@@ -89,15 +89,15 @@ export default function SettingsPage() {
                 <h2 className="settings-section-title">Account information</h2>
                 <label className="field">
                   <span>Full name</span>
-                  <input type="text" value={form.name} onChange={(e) => set("name", e.target.value)} placeholder="Your full name" />
+                  <input id="settings-name" name="name" type="text" value={form.name} onChange={(e) => set("name", e.target.value)} placeholder="Your full name" />
                 </label>
                 <label className="field">
                   <span>Email</span>
-                  <input type="email" value={form.email} onChange={(e) => set("email", e.target.value)} placeholder="your@email.com" />
+                  <input id="settings-email" name="email" type="email" value={form.email} onChange={(e) => set("email", e.target.value)} placeholder="your@email.com" />
                 </label>
                 <label className="field">
                   <span>Phone</span>
-                  <input type="tel" value={form.phone} onChange={(e) => set("phone", e.target.value)} placeholder="99xxxxxx" />
+                  <input id="settings-phone" name="phone" type="tel" value={form.phone} onChange={(e) => set("phone", e.target.value)} placeholder="99xxxxxx" />
                 </label>
                 <div className="settings-actions">
                   <button type="submit" className="solid-button">{saved ? "Saved!" : "Save changes"}</button>
@@ -110,15 +110,15 @@ export default function SettingsPage() {
                 <h2 className="settings-section-title">Change password</h2>
                 <label className="field">
                   <span>Current password</span>
-                  <input type="password" value={form.currentPassword} onChange={(e) => set("currentPassword", e.target.value)} placeholder="••••••••" />
+                  <input id="settings-current-password" name="currentPassword" type="password" value={form.currentPassword} onChange={(e) => set("currentPassword", e.target.value)} placeholder="••••••••" />
                 </label>
                 <label className="field">
                   <span>New password</span>
-                  <input type="password" value={form.newPassword} onChange={(e) => set("newPassword", e.target.value)} placeholder="••••••••" />
+                  <input id="settings-new-password" name="newPassword" type="password" value={form.newPassword} onChange={(e) => set("newPassword", e.target.value)} placeholder="••••••••" />
                 </label>
                 <label className="field">
                   <span>Confirm new password</span>
-                  <input type="password" value={form.confirmPassword} onChange={(e) => set("confirmPassword", e.target.value)} placeholder="••••••••" />
+                  <input id="settings-confirm-password" name="confirmPassword" type="password" value={form.confirmPassword} onChange={(e) => set("confirmPassword", e.target.value)} placeholder="••••••••" />
                 </label>
                 <div className="settings-actions">
                   <button type="submit" className="solid-button">{saved ? "Saved!" : "Update password"}</button>
