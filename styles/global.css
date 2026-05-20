@@ -10889,6 +10889,61 @@ img {
   border-bottom: 1px solid #ded8d2;
 }
 
+.auth-role-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0 0 18px;
+}
+
+.auth-role-card {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  min-height: 76px;
+  padding: 12px;
+  border: 1px solid #cfc7bf;
+  border-radius: 0;
+  background: #ffffff;
+  color: #111111;
+  text-align: left;
+  cursor: pointer;
+}
+
+.auth-role-card strong {
+  font-size: 0.9rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.auth-role-card span {
+  color: #656b73;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.auth-role-card.active {
+  border-color: #111111;
+  background: #111111;
+  color: #ffffff;
+}
+
+.auth-role-card.active span {
+  color: rgba(255,255,255,0.72);
+}
+
+.auth-role-note {
+  margin: -2px 0 0;
+  padding: 10px 12px;
+  border: 1px solid #ded8d2;
+  background: #faf8f5;
+  color: #33383f;
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
 .auth-page-shell .auth-tab {
   flex: 0 0 auto;
   padding: 0 0 12px;
@@ -11128,6 +11183,10 @@ img {
   .auth-page-shell .auth-tab-row {
     gap: 22px;
     margin-bottom: 20px;
+  }
+
+  .auth-role-row {
+    grid-template-columns: 1fr;
   }
 
   .auth-page-shell .field input,
@@ -12422,6 +12481,10 @@ body {
   }
 
   .auth-tab-row {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-role-row {
     grid-template-columns: 1fr;
   }
 
