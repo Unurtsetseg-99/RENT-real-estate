@@ -213,36 +213,7 @@ export default function AuthPage() {
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
     setError("");
-    try {
-      const csrfRes = await fetch("/api/auth/csrf", { credentials: "same-origin" });
-      const csrfData = await csrfRes.json();
-      if (!csrfRes.ok || !csrfData.csrfToken) {
-        throw new Error("Could not start Google login.");
-      }
-
-      const form = document.createElement("form");
-      form.method = "POST";
-      form.action = "/api/auth/signin/google";
-      form.style.display = "none";
-
-      const csrfInput = document.createElement("input");
-      csrfInput.type = "hidden";
-      csrfInput.name = "csrfToken";
-      csrfInput.value = csrfData.csrfToken;
-      form.appendChild(csrfInput);
-
-      const callbackInput = document.createElement("input");
-      callbackInput.type = "hidden";
-      callbackInput.name = "callbackUrl";
-      callbackInput.value = `${window.location.origin}/listings`;
-      form.appendChild(callbackInput);
-
-      document.body.appendChild(form);
-      form.submit();
-    } catch {
-      setGoogleLoading(false);
-      setError("Google login could not start. Please refresh and try again.");
-    }
+    window.location.href = "/api/auth/google/start";
   };
 
   if (step === "otp") {
