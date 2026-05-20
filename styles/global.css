@@ -8033,29 +8033,6 @@ img {
   margin: 12px 0 0;
 }
 
-.admin-agent-credentials {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 4px;
-  margin-top: 12px;
-  padding: 12px;
-  border: 1px dashed var(--gold);
-  border-radius: 10px;
-  background: rgba(201,168,76,0.09);
-}
-
-.admin-agent-credentials span {
-  color: #777;
-  font-size: 0.76rem;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-
-.admin-agent-credentials strong {
-  color: #33383f;
-  word-break: break-word;
-}
-
 .admin-btn {
   padding: 7px 14px;
   border-radius: 8px;

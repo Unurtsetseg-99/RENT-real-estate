@@ -107,7 +107,7 @@ export async function POST(req: NextRequest) {
         [input.full_name.trim(), workEmail, passwordHash, input.phone.trim()]
       );
       const user = userResult.rows[0];
-      const profileResult = await client.query(
+      await client.query(
         `INSERT INTO agent_profiles (user_id, company, gmail, work_email, phone, total_listings, experience_years)
          VALUES ($1, $2, $3, $4, $5, $6, $7)
          RETURNING company, gmail, work_email, phone, total_listings, experience_years`,
@@ -122,7 +122,7 @@ export async function POST(req: NextRequest) {
         ]
       );
       await client.query("COMMIT");
-      return ok({ ...user, ...profileResult.rows[0], temp_password: tempPassword }, 201);
+      return ok({ id: user.id, full_name: user.full_name }, 201);
     } catch (e) {
       await client.query("ROLLBACK");
       throw e;

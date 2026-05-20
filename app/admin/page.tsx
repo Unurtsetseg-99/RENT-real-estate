@@ -30,13 +30,6 @@ type Analytics = {
 type Agent = {
   id: number;
   full_name: string;
-  work_email: string;
-  gmail?: string;
-  company?: string;
-  phone?: string;
-  total_listings?: number;
-  experience_years?: number;
-  temp_password?: string;
 };
 
 const emptyAgentForm = {
@@ -110,7 +103,6 @@ export default function AdminPage() {
   const [agentForm, setAgentForm] = useState(emptyAgentForm);
   const [agentLoading, setAgentLoading] = useState(false);
   const [agentMessage, setAgentMessage] = useState("");
-  const [newAgent, setNewAgent] = useState<Agent | null>(null);
 
   useEffect(() => { setMounted(true); }, []);
 
@@ -193,7 +185,6 @@ export default function AdminPage() {
   const handleAddAgent = async (e: React.FormEvent) => {
     e.preventDefault();
     setAgentMessage("");
-    setNewAgent(null);
     setAgentLoading(true);
     try {
       const res = await fetch("/api/admin/agents", {
@@ -206,8 +197,7 @@ export default function AdminPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to add agent.");
-      setNewAgent(data);
-      setAgentMessage(`${data.full_name} added as an agent.`);
+      setAgentMessage("Agent added successfully.");
       setAgentForm(emptyAgentForm);
       fetchAnalytics();
     } catch (e) {
@@ -290,14 +280,6 @@ export default function AdminPage() {
               </button>
             </form>
             {agentMessage && <p className="auth-error admin-agent-message">{agentMessage}</p>}
-            {newAgent && (
-              <div className="admin-agent-credentials">
-                <span>Generated RENT email</span>
-                <strong>{newAgent.work_email}</strong>
-                <span>Temporary password</span>
-                <strong>{newAgent.temp_password}</strong>
-              </div>
-            )}
           </div>
 
         </div>
