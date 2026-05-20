@@ -107,7 +107,6 @@ export default function AdminPage() {
   const [detailModal, setDetailModal] = useState<Listing | null>(null);
   const [mounted, setMounted] = useState(false);
   const [actionError, setActionError] = useState("");
-  const [agents, setAgents] = useState<Agent[]>([]);
   const [agentForm, setAgentForm] = useState(emptyAgentForm);
   const [agentLoading, setAgentLoading] = useState(false);
   const [agentMessage, setAgentMessage] = useState("");
@@ -141,19 +140,10 @@ export default function AdminPage() {
     }
   };
 
-  const fetchAgents = async () => {
-    try {
-      const res = await fetch("/api/admin/agents", { headers: authHeaders });
-      const data = await res.json();
-      if (res.ok) setAgents(data || []);
-    } catch {}
-  };
-
   useEffect(() => {
     if (mounted && isAuthenticated && role === "admin") {
       fetchAnalytics();
       fetchListings(filter);
-      fetchAgents();
     }
   }, [mounted, isAuthenticated, role]);
 
@@ -219,7 +209,6 @@ export default function AdminPage() {
       setNewAgent(data);
       setAgentMessage(`${data.full_name} added as an agent.`);
       setAgentForm(emptyAgentForm);
-      fetchAgents();
       fetchAnalytics();
     } catch (e) {
       setAgentMessage(e instanceof Error ? e.message : "Could not save agent.");
@@ -311,32 +300,6 @@ export default function AdminPage() {
             )}
           </div>
 
-          <div className="admin-agent-list-card">
-            <div style={{ marginBottom: 16 }}>
-              <span className="eyebrow">Agent list</span>
-              <h2 style={{ margin: "4px 0 0", color: "#464646" }}>{agents.length} agents</h2>
-            </div>
-            <div className="admin-agent-list">
-              {agents.length === 0 ? (
-                <p style={{ margin: 0, color: "#777" }}>No agents found.</p>
-              ) : (
-                agents.map((agent) => (
-                  <article key={agent.id} className="admin-agent-card">
-                    <div>
-                      <h3>{agent.full_name}</h3>
-                      <p>{agent.company || "RENT"} - {agent.work_email}</p>
-                    </div>
-                    <div className="admin-agent-meta">
-                      <span>{agent.gmail || "-"}</span>
-                      <span>{agent.phone || "-"}</span>
-                      <span>{agent.total_listings ?? 0} listings</span>
-                      <span>{agent.experience_years ?? 0} years</span>
-                    </div>
-                  </article>
-                ))
-              )}
-            </div>
-          </div>
         </div>
 
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap", marginBottom: 16 }}>
