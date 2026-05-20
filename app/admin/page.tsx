@@ -27,6 +27,27 @@ type Analytics = {
   agents: { total: number; today: number; users: number; byDay: DayPoint[] };
 };
 
+type Agent = {
+  id: number;
+  full_name: string;
+  work_email: string;
+  gmail?: string;
+  company?: string;
+  phone?: string;
+  total_listings?: number;
+  experience_years?: number;
+  temp_password?: string;
+};
+
+const emptyAgentForm = {
+  full_name: "",
+  company: "",
+  gmail: "",
+  phone: "",
+  total_listings: "0",
+  experience_years: "0",
+};
+
 const statusLabel: Record<Listing["status"], string> = {
   pending: "Waiting",
   approved: "Approved",
@@ -86,6 +107,11 @@ export default function AdminPage() {
   const [detailModal, setDetailModal] = useState<Listing | null>(null);
   const [mounted, setMounted] = useState(false);
   const [actionError, setActionError] = useState("");
+  const [agents, setAgents] = useState<Agent[]>([]);
+  const [agentForm, setAgentForm] = useState(emptyAgentForm);
+  const [agentLoading, setAgentLoading] = useState(false);
+  const [agentMessage, setAgentMessage] = useState("");
+  const [newAgent, setNewAgent] = useState<Agent | null>(null);
 
   useEffect(() => { setMounted(true); }, []);
 
@@ -115,10 +141,19 @@ export default function AdminPage() {
     }
   };
 
+  const fetchAgents = async () => {
+    try {
+      const res = await fetch("/api/admin/agents", { headers: authHeaders });
+      const data = await res.json();
+      if (res.ok) setAgents(data || []);
+    } catch {}
+  };
+
   useEffect(() => {
     if (mounted && isAuthenticated && role === "admin") {
       fetchAnalytics();
       fetchListings(filter);
+      fetchAgents();
     }
   }, [mounted, isAuthenticated, role]);
 
@@ -161,6 +196,38 @@ export default function AdminPage() {
     }
   };
 
+  const handleAgentChange = (field: keyof typeof emptyAgentForm, value: string) => {
+    setAgentForm((current) => ({ ...current, [field]: value }));
+  };
+
+  const handleAddAgent = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAgentMessage("");
+    setNewAgent(null);
+    setAgentLoading(true);
+    try {
+      const res = await fetch("/api/admin/agents", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeaders,
+        },
+        body: JSON.stringify(agentForm),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to add agent.");
+      setNewAgent(data);
+      setAgentMessage(`${data.full_name} added as an agent.`);
+      setAgentForm(emptyAgentForm);
+      fetchAgents();
+      fetchAnalytics();
+    } catch (e) {
+      setAgentMessage(e instanceof Error ? e.message : "Could not save agent.");
+    } finally {
+      setAgentLoading(false);
+    }
+  };
+
   const statusCounts = {
     pending: analytics?.listings.byStatus.find((item) => item.status === "pending")?.count ?? 0,
     approved: analytics?.listings.byStatus.find((item) => item.status === "approved")?.count ?? 0,
@@ -195,6 +262,80 @@ export default function AdminPage() {
           <div className="notice-card" style={{ padding: 18 }}>
             <span className="eyebrow">Agent usage</span>
             <MiniBars data={analytics?.agents.byDay ?? []} color="#6d74b8" />
+          </div>
+        </div>
+
+        <div className="admin-agent-section">
+          <div className="admin-agent-form-card">
+            <div style={{ marginBottom: 16 }}>
+              <span className="eyebrow">Agent management</span>
+              <h2 style={{ margin: "4px 0 0", color: "#464646" }}>Add new agent</h2>
+            </div>
+            <form className="admin-agent-form" onSubmit={handleAddAgent}>
+              <label className="field">
+                <span>Name</span>
+                <input name="agentName" value={agentForm.full_name} onChange={(e) => handleAgentChange("full_name", e.target.value)} placeholder="Agent name" required />
+              </label>
+              <label className="field">
+                <span>Company</span>
+                <input name="agentCompany" value={agentForm.company} onChange={(e) => handleAgentChange("company", e.target.value)} placeholder="Company name" required />
+              </label>
+              <label className="field">
+                <span>Gmail</span>
+                <input name="agentGmail" type="email" value={agentForm.gmail} onChange={(e) => handleAgentChange("gmail", e.target.value)} placeholder="agent@gmail.com" required />
+              </label>
+              <label className="field">
+                <span>Phone</span>
+                <input name="agentPhone" value={agentForm.phone} onChange={(e) => handleAgentChange("phone", e.target.value)} placeholder="+976 99xxxxxx" required />
+              </label>
+              <label className="field">
+                <span>Total listings</span>
+                <input name="agentListings" type="number" min="0" value={agentForm.total_listings} onChange={(e) => handleAgentChange("total_listings", e.target.value)} />
+              </label>
+              <label className="field">
+                <span>Experience years</span>
+                <input name="agentExperience" type="number" min="0" value={agentForm.experience_years} onChange={(e) => handleAgentChange("experience_years", e.target.value)} />
+              </label>
+              <button type="submit" className="solid-button admin-agent-submit" disabled={agentLoading}>
+                {agentLoading ? "Saving..." : "Add Agent"}
+              </button>
+            </form>
+            {agentMessage && <p className="auth-error admin-agent-message">{agentMessage}</p>}
+            {newAgent && (
+              <div className="admin-agent-credentials">
+                <span>Generated RENT email</span>
+                <strong>{newAgent.work_email}</strong>
+                <span>Temporary password</span>
+                <strong>{newAgent.temp_password}</strong>
+              </div>
+            )}
+          </div>
+
+          <div className="admin-agent-list-card">
+            <div style={{ marginBottom: 16 }}>
+              <span className="eyebrow">Agent list</span>
+              <h2 style={{ margin: "4px 0 0", color: "#464646" }}>{agents.length} agents</h2>
+            </div>
+            <div className="admin-agent-list">
+              {agents.length === 0 ? (
+                <p style={{ margin: 0, color: "#777" }}>No agents found.</p>
+              ) : (
+                agents.map((agent) => (
+                  <article key={agent.id} className="admin-agent-card">
+                    <div>
+                      <h3>{agent.full_name}</h3>
+                      <p>{agent.company || "RENT"} - {agent.work_email}</p>
+                    </div>
+                    <div className="admin-agent-meta">
+                      <span>{agent.gmail || "-"}</span>
+                      <span>{agent.phone || "-"}</span>
+                      <span>{agent.total_listings ?? 0} listings</span>
+                      <span>{agent.experience_years ?? 0} years</span>
+                    </div>
+                  </article>
+                ))
+              )}
+            </div>
           </div>
         </div>
 

@@ -7981,6 +7981,124 @@ img {
   flex-wrap: wrap;
 }
 
+.admin-agent-section {
+  display: grid;
+  grid-template-columns: minmax(300px, 0.95fr) minmax(320px, 1.05fr);
+  gap: 16px;
+  margin-bottom: 30px;
+}
+
+.admin-agent-form-card,
+.admin-agent-list-card {
+  border: 1px solid var(--gold);
+  border-radius: 16px;
+  background: var(--token-9c183037-09f5-4d93-9e94-f6ca955d1db0, #f4efeb);
+  padding: 18px;
+}
+
+.admin-agent-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.admin-agent-form .field {
+  margin: 0;
+}
+
+.admin-agent-form .field input {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid var(--gold);
+  background: #ffffff;
+}
+
+.admin-agent-form .field input:focus,
+.admin-agent-form .field input:hover {
+  outline: 2px solid var(--gold);
+  outline-offset: -2px;
+}
+
+.admin-agent-submit {
+  grid-column: 1 / -1;
+  border-radius: 10px;
+  background: #111111 !important;
+}
+
+.admin-agent-submit:hover,
+.admin-agent-submit:focus-visible {
+  background: var(--gold) !important;
+}
+
+.admin-agent-message {
+  margin: 12px 0 0;
+}
+
+.admin-agent-credentials {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 4px;
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px dashed var(--gold);
+  border-radius: 10px;
+  background: rgba(201,168,76,0.09);
+}
+
+.admin-agent-credentials span {
+  color: #777;
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.admin-agent-credentials strong {
+  color: #33383f;
+  word-break: break-word;
+}
+
+.admin-agent-list {
+  display: grid;
+  gap: 10px;
+  max-height: 480px;
+  overflow: auto;
+}
+
+.admin-agent-card {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid rgba(201,168,76,0.55);
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.admin-agent-card h3 {
+  margin: 0 0 4px;
+  color: #33383f;
+}
+
+.admin-agent-card p {
+  margin: 0;
+  color: #777;
+  font-size: 0.86rem;
+}
+
+.admin-agent-meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.admin-agent-meta span {
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: rgba(201,168,76,0.1);
+  color: #464646;
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
 .admin-btn {
   padding: 7px 14px;
   border-radius: 8px;
@@ -11374,6 +11492,11 @@ img {
 
   .account-sidebar-nav {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-agent-section,
+  .admin-agent-form {
+    grid-template-columns: 1fr;
   }
 
   .admin-listing-card,
